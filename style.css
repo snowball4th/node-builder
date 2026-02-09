@@ -373,6 +373,7 @@ textarea{ resize:none; }
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: nowrap;     /* ✅ 여기 추가: 줄바꿈 금지 */
 
   margin-bottom: 10px;   /* 카드 안 여백 */
 }
