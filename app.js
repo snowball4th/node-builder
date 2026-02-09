@@ -249,11 +249,28 @@ function addItem() {
   }
 
   const item = {
-    itemId,
-    name: `아이템 ${i}`,
-    maxUses: 1, // number or null(INF)
-    consumable: true,
-  };
+  id: itemId,
+
+  qty: 0,    // 0~10
+  dur: 10,   // 0~10
+
+  variants: {
+    base: {
+      name: `아이템 ${i}`,
+      img: null, // PNG (나중에 file/dataURL)
+    },
+    dur0: {
+      name: `부서진 아이템 ${i}`,
+      img: null,
+    },
+    special: {
+      name: `특수 아이템 ${i}`,
+      img: null,
+      nodeId: null, // 조건 노드 ID
+    }
+  }
+};
+
 
   state.items.unshift(item);
   state.selectedItemKey = itemId;
