@@ -346,7 +346,8 @@ textarea{ resize:none; }
 
 .choice-card{
   position: relative;
-  padding: 16px 12px 12px;
+  /* 기존 값이 padding: 16px 12px 12px; 라면 */
+  padding: 26px 12px 12px;  /* ✅ 위쪽만 늘림 */
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.035);
@@ -376,7 +377,11 @@ textarea{ resize:none; }
   display:flex;
   gap:6px;
   align-items:center;
+
+  flex-wrap: wrap;      /* ✅ 추가 */
+  max-width: 60%;       /* ✅ 추가 */
 }
+
 
 .pill-mini{
   font-size: 11px;
@@ -386,6 +391,7 @@ textarea{ resize:none; }
   background: rgba(0,0,0,.22);
   color: rgba(233,236,241,.85);
   line-height: 1;
+  white-space: nowrap;
 }
 .pill-mini.require{
   border-color: rgba(79,124,255,.30);
