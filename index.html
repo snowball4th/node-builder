@@ -32,44 +32,30 @@
       </div>
 
       <div class="editor">
+        <label class="field">
+          <span class="label">선택 노드 ID</span>
+          <input id="selectedNodeId" type="text" disabled />
+        </label>
 
-        <!-- ✅ Node block -->
-        <div class="section-block node">
-          <div class="section-titlebar">
-            <div class="title">Node</div>
-            <div class="sub">제목 / 본문</div>
+        <label class="field">
+          <span class="label">제목</span>
+          <input id="selectedNodeTitle" type="text" placeholder="예: 낚싯대가 부러졌다" />
+        </label>
+
+        <label class="field">
+          <span class="label">텍스트</span>
+          <textarea id="selectedNodeBody" rows="6" placeholder="노드 내용..."></textarea>
+        </label>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">선택지</div>
+            <button id="btnAddChoice" class="btn" type="button">+ 선택지 추가</button>
           </div>
-
-          <label class="field">
-            <span class="label">선택 노드 ID</span>
-            <input id="selectedNodeId" type="text" disabled />
-          </label>
-
-          <label class="field">
-            <span class="label">제목</span>
-            <input id="selectedNodeTitle" type="text" placeholder="예: 낚싯대가 부러졌다" />
-          </label>
-
-          <label class="field">
-            <span class="label">텍스트</span>
-            <textarea id="selectedNodeBody" rows="6" placeholder="노드 내용..."></textarea>
-          </label>
-        </div>
-
-        <!-- ✅ Choices block -->
-        <div class="section-block choices">
-          <div class="section-titlebar">
-            <div class="title">Choices</div>
-            <div class="sub">텍스트 / 이동 / 조건 / 아이템</div>
-          </div>
-
-          <div class="section" style="margin:0; padding-top:0; border-top:0;">
-            <div class="section-head">
-              <div class="section-title">선택지</div>
-              <button id="btnAddChoice" class="btn" type="button">+ 선택지 추가</button>
-            </div>
-            <div id="choiceList" class="choice-list"></div>
-            <div class="hint tiny">선택지는 ‘미리보기’에서 클릭하면 효과(아이템 획득/사용)가 적용되고 다음 노드로 이동해.</div>
+          <div id="choiceList" class="choice-list"></div>
+          <div class="hint tiny">
+            선택지 클릭 시: (혼란 변화 → 아이템 효과 적용 → 다음 노드 이동)
+            ※ 플레이어 화면에는 혼란 수치가 표시되지 않고, 분위기만 미세하게 달라짐
           </div>
         </div>
 
@@ -84,7 +70,7 @@
     <section class="panel hidden" id="panel-preview" data-panel="preview" aria-label="미리보기">
       <div class="panel-header">
         <h2>미리보기</h2>
-        <div class="hint">플레이 모드: 선택지 클릭 → 조건 검사 → 효과 적용 → 다음 노드</div>
+        <div class="hint">플레이 모드: 선택지 클릭 → (혼란/아이템) → 다음 노드</div>
       </div>
 
       <div class="preview-split">
@@ -94,13 +80,12 @@
             <button id="btnResetRun" class="btn" type="button">리셋</button>
           </div>
           <div id="invList" class="inv-list"></div>
-          <div class="hint tiny">아이템은 인스턴스 단위(개별)로 존재하며, 선택지에서 사용(uses 감소)돼.</div>
+          <div class="hint tiny">아이템은 인스턴스(개별) 단위로 존재하며, 선택지에서 사용(uses 감소)돼.</div>
         </aside>
 
         <article class="preview" id="previewArea">
           <div class="preview-title" id="previewTitle">시작</div>
-          <div class="preview-body" id="previewBody">왼쪽에서 시작 노드를 선택하거나, 노드 1부터 시작해.</div>
-
+          <div class="preview-body" id="previewBody">왼쪽에서 시작 노드를 선택하거나, 노드 0001부터 시작해.</div>
           <div class="preview-choices" id="previewChoices"></div>
         </article>
       </div>
