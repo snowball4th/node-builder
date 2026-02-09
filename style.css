@@ -500,3 +500,20 @@ textarea{ resize:none; }
   font-size:12px;
 }
 
+.section.core{
+  border:1px solid rgba(255,255,255,.25);
+  padding:12px;
+  border-radius:8px;
+}
+
+.section + .section{
+  margin-top:24px;
+}
+
+.item-variant{
+  border:1px solid rgba(255,255,255,.15);
+  padding:8px;
+  margin-bottom:8px;
+  background:rgba(255,255,255,.03);
+}
+
