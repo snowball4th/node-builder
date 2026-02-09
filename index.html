@@ -110,87 +110,49 @@
         <div class="section">
           <div class="section-head">
             <div class="section-title">선택 아이템 편집</div>
-            <!-- ITEM CORE -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">기본 속성</div>
-  </div>
+          </div>
+           <!-- ✅ 여기부터 실제 내용 -->
 
+  <!-- 정체성 -->
   <div class="grid2">
     <label class="field">
-      <span class="label">수량 (0~10)</span>
-      <input id="selectedItemQty" type="number" min="0" max="10" step="1" />
+      <span class="label">itemId(내부 키)</span>
+      <input id="selectedItemId" type="text" />
     </label>
 
     <label class="field">
-      <span class="label">내구도 (0~10)</span>
-      <input id="selectedItemDur" type="number" min="0" max="10" step="1" />
+      <span class="label">표시 이름</span>
+      <input id="selectedItemName" type="text" />
     </label>
   </div>
 
-  <div class="hint tiny">
-    · 수량 0 → 아이템 미보유<br/>
-    · 내구도 0 → 사용 불가 (보유 유지, 외형 변경)
-  </div>
-</div>
-
-<!-- ITEM VARIANTS -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">아이템 상태 (최대 3)</div>
+  <!-- 기본 속성 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">기본 속성</div>
+    </div>
+    ...
   </div>
 
-  <!-- BASE -->
-  <div class="item-variant">
-    <strong>기본</strong>
-    <input type="text" id="itemBaseName" placeholder="이름 (예: 칼)" />
-    <input type="file" id="itemBaseImg" accept="image/png" />
+  <!-- 아이템 상태 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">아이템 상태 (최대 3)</div>
+    </div>
+    ...
   </div>
 
-  <!-- DUR 0 -->
-  <div class="item-variant">
-    <strong>내구도 0</strong>
-    <input type="text" id="itemBrokenName" placeholder="이름 (예: 부서진 칼)" />
-    <input type="file" id="itemBrokenImg" accept="image/png" />
-  </div>
-
-  <!-- SPECIAL -->
-  <div class="item-variant">
-    <strong>특수 상태</strong>
-    <input type="text" id="itemSpecialName" placeholder="이름 (예: 저주받은 칼)" />
-    <input type="file" id="itemSpecialImg" accept="image/png" />
-    <input type="text" id="itemSpecialNode" placeholder="조건 노드 ID (예: altar)" />
+  <!-- 액션 -->
+  <div class="row">
+    <button id="btnSaveItem" class="btn">아이템 저장</button>
+    <button id="btnDeleteItem" class="btn danger">아이템 삭제</button>
   </div>
 
   <div class="hint tiny">
-    · PNG 권장 96×96 (자동 보정)<br/>
-    · 특수 상태는 특정 노드 선택 이후 자동 적용
+    itemId는 중복되면 안 돼.
   </div>
 </div>
 
-          </div>
-
-          <div class="grid2">
-            <label class="field">
-              <span class="label">itemId(내부 키)</span>
-              <input id="selectedItemId" type="text" placeholder="예: key, medkit" />
-            </label>
-
-            <label class="field">
-              <span class="label">표시 이름</span>
-              <input id="selectedItemName" type="text" placeholder="예: 낡은 열쇠" />
-            </label>
-          </div>
-       
-          <div class="row">
-            <button id="btnSaveItem" class="btn" type="button">아이템 저장</button>
-            <button id="btnDeleteItem" class="btn danger" type="button">아이템 삭제</button>
-          </div>
-
-          <div class="hint tiny">
-            itemId는 중복되면 안 돼. (예: key, knife, coin 같은 짧은 키)
-          </div>
-        </div>
       </div>
     </section>
   </main>
