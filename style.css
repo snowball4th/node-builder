@@ -341,40 +341,9 @@ textarea{ resize:none; }
 }
 
 /* =========================
-   Editor / Choices UI polish
+   Choice editor polish
    ========================= */
 
-.section-block{
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.03);
-}
-.section-block + .section-block{ margin-top: 18px; }
-.section-block.node{ border-left: 4px solid rgba(79,124,255,.70); }
-.section-block.choices{ border-left: 4px solid rgba(255,184,107,.70); }
-
-.section-titlebar{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom: 10px;
-}
-.section-titlebar .title{
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: rgba(233,236,241,.86);
-}
-.section-titlebar .sub{
-  font-size: 12px;
-  color: rgba(167,175,189,.95);
-}
-
-/* Choice card separation */
 .choice-card{
   position: relative;
   padding: 16px 12px 12px;
@@ -430,13 +399,11 @@ textarea{ resize:none; }
 }
 .pill-mini.muted{ opacity:.75; }
 
-/* Make choice TEXT most prominent */
 .choice-main input{
   font-size: 15px;
   font-weight: 650;
 }
 
-/* toId chip (arrow) */
 .to-chip{
   display:inline-flex;
   align-items:center;
@@ -451,14 +418,12 @@ textarea{ resize:none; }
 }
 .to-chip .arrow{ opacity:.9; }
 
-/* Divider inside choice card */
 .choice-divider{
   height: 1px;
   background: rgba(255,255,255,.08);
   margin: 12px 0;
 }
 
-/* Subsections inside choice card */
 .choice-sub{
   padding: 10px 10px 12px;
   border-radius: 12px;
@@ -477,3 +442,33 @@ textarea{ resize:none; }
 }
 .choice-sub.require{ border-left: 3px solid rgba(79,124,255,.55); }
 .choice-sub.effects{ border-left: 3px solid rgba(255,184,107,.55); }
+
+.choice-sub .grid2{ margin-bottom: 8px; }
+
+/* =========================
+   Confusion: ultra-subtle, no meter/no numbers
+   ========================= */
+
+#previewArea[data-confusion="calm"]{
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06);
+}
+
+#previewArea[data-confusion="subtle"]{
+  filter: saturate(1.02);
+  box-shadow: 0 0 0 1px rgba(255,220,160,.10);
+}
+
+#previewArea[data-confusion="uneasy"]{
+  filter: saturate(1.04) contrast(1.01);
+  box-shadow: 0 0 0 1px rgba(255,170,120,.16);
+}
+
+#previewArea[data-confusion="danger"]{
+  filter: saturate(1.06) contrast(1.02);
+  box-shadow: 0 0 0 1px rgba(255,120,120,.22);
+}
+
+#previewArea[data-confusion="uneasy"] .preview-body,
+#previewArea[data-confusion="danger"] .preview-body{
+  opacity: .94;
+}
