@@ -1,3 +1,5 @@
+/* style.css (전체 교체본) */
+
 :root{
   --bg: #0b0c10;
   --panel: #11131a;
@@ -337,3 +339,141 @@ textarea{ resize:none; }
   opacity: 1;
   transform: translateX(-50%) translateY(-2px);
 }
+
+/* =========================
+   Editor / Choices UI polish
+   ========================= */
+
+.section-block{
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+}
+.section-block + .section-block{ margin-top: 18px; }
+.section-block.node{ border-left: 4px solid rgba(79,124,255,.70); }
+.section-block.choices{ border-left: 4px solid rgba(255,184,107,.70); }
+
+.section-titlebar{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 10px;
+}
+.section-titlebar .title{
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(233,236,241,.86);
+}
+.section-titlebar .sub{
+  font-size: 12px;
+  color: rgba(167,175,189,.95);
+}
+
+/* Choice card separation */
+.choice-card{
+  position: relative;
+  padding: 16px 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.035);
+}
+.choice-card + .choice-card{ margin-top: 14px; }
+.choice-card:nth-child(odd){ background: rgba(255,255,255,.045); }
+.choice-card:nth-child(even){ background: rgba(255,255,255,.028); }
+
+.choice-badge{
+  position:absolute;
+  top:-10px;
+  left:12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing:.03em;
+  border: 1px solid rgba(255,184,107,.35);
+  background: rgba(255,184,107,.14);
+  color: rgba(255,184,107,.95);
+}
+
+.choice-topmeta{
+  position:absolute;
+  top:10px;
+  right:10px;
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+.pill-mini{
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.22);
+  color: rgba(233,236,241,.85);
+  line-height: 1;
+}
+.pill-mini.require{
+  border-color: rgba(79,124,255,.30);
+  background: rgba(79,124,255,.12);
+  color: rgba(183,206,255,.95);
+}
+.pill-mini.item{
+  border-color: rgba(255,184,107,.30);
+  background: rgba(255,184,107,.12);
+  color: rgba(255,216,176,.95);
+}
+.pill-mini.muted{ opacity:.75; }
+
+/* Make choice TEXT most prominent */
+.choice-main input{
+  font-size: 15px;
+  font-weight: 650;
+}
+
+/* toId chip (arrow) */
+.to-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(79,124,255,.35);
+  background: rgba(79,124,255,.12);
+  color: rgba(210,224,255,.95);
+  font-size: 12px;
+  font-weight: 650;
+}
+.to-chip .arrow{ opacity:.9; }
+
+/* Divider inside choice card */
+.choice-divider{
+  height: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 12px 0;
+}
+
+/* Subsections inside choice card */
+.choice-sub{
+  padding: 10px 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+}
+.choice-sub + .choice-sub{ margin-top: 10px; }
+
+.choice-sub .subhead{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size: 12px;
+  color: rgba(167,175,189,.95);
+  margin-bottom: 8px;
+}
+.choice-sub.require{ border-left: 3px solid rgba(79,124,255,.55); }
+.choice-sub.effects{ border-left: 3px solid rgba(255,184,107,.55); }
