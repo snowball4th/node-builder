@@ -1,17 +1,33 @@
 // Node Builder v2 (stable)
-// - Numeric node id
+// - Numeric node id (UI shows 4-digit)
 // - Item master with maxUses: number or INF(null)
 // - Inventory uses instances
-// - Consume happens on choice click
-// - LocalStorage persistence
+// - Choice effects: Give/Consume can be toggled per choice (builder UX)
+// - Confusion(혼란): internal 0..10 integer, NOT shown to player. Only subtle UI changes in preview.
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 const STORAGE_KEY = "node_builder_v2";
-// ✅ 표시용 ID 포맷(내부는 number 그대로)
+
+// ✅ 표시용 ID 포맷 (내부는 number 유지)
 const ID_WIDTH = 4;
 function formatId(n){ return String(n).padStart(ID_WIDTH, "0"); }
+
+// ✅ 혼란(0~10, 정수) 보정
+function clampConfusion(v){
+  const n = parseInt(String(v), 10);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(10, n));
+}
+
+// ✅ 혼란 단계(4단계) — 플레이어에 수치 노출 없이 미세 분위기 변화만
+function confusionStage(v){
+  if (v <= 2) return "calm";
+  if (v <= 4) return "subtle";
+  if (v <= 7) return "uneasy";
+  return "danger";
+}
 
 const state = {
   nodes: [],
@@ -23,6 +39,7 @@ const state = {
   run: {
     currentNodeId: null,
     inventory: [], // { instanceId, itemId, usesLeft|null }
+    confusion: 0,  // ✅ internal only
   },
 };
 
@@ -88,6 +105,7 @@ function loadAll() {
 
     state.run.currentNodeId = null;
     state.run.inventory = [];
+    state.run.confusion = 0;
     return true;
   } catch {
     return false;
@@ -164,7 +182,7 @@ function deleteNode() {
   if (state.selectedNodeId != null) selectNode(state.selectedNodeId);
   else clearEditor();
 
-  toast(`삭제: 노드 ${id}`);
+  toast(`삭제: 노드 ${formatId(id)}`);
 }
 
 function clearEditor() {
@@ -200,12 +218,12 @@ function renderNodeList() {
 
     const title = document.createElement("div");
     title.className = "title";
-    title.textContent = n.title?.trim() ? n.title : `노드 ${n.id}`;
+    title.textContent = n.title?.trim() ? n.title : `노드 ${formatId(n.id)}`;
 
     const meta = document.createElement("div");
     meta.className = "meta";
     const left = document.createElement("span");
-    left.textContent = `ID: ${n.id}`;
+    left.textContent = `ID: ${formatId(n.id)}`;
     const right = document.createElement("span");
     right.textContent = `수정: ${n.updatedAt}`;
     meta.append(left, right);
@@ -359,6 +377,10 @@ function deleteItem() {
       if (c.require?.itemId === key) c.require = { itemId: "", minUses: 1 };
       c.effects.give = (c.effects.give ?? []).filter((g) => g.itemId !== key);
       c.effects.consume = (c.effects.consume ?? []).filter((k) => k.itemId !== key);
+      if (c.effectsEnabled) {
+        c.effectsEnabled.give = (c.effects.give.length > 0);
+        c.effectsEnabled.consume = (c.effects.consume.length > 0);
+      }
     });
   });
   state.run.inventory = state.run.inventory.filter((inst) => inst.itemId !== key);
@@ -378,6 +400,17 @@ function ensureChoiceShape(c) {
   if (!c.effects) c.effects = { give: [], consume: [] };
   if (!c.effects.give) c.effects.give = [];
   if (!c.effects.consume) c.effects.consume = [];
+
+  // ✅ Give/Consume 토글 상태(기본: 현재 리스트 기반)
+  if (!c.effectsEnabled) {
+    c.effectsEnabled = {
+      give: (c.effects.give.length > 0),
+      consume: (c.effects.consume.length > 0),
+    };
+  }
+
+  // ✅ 혼란 변화값(선택지 클릭 시 적용) — 내부값만
+  if (typeof c.confusionDelta !== "number") c.confusionDelta = 0;
 }
 
 function addChoice() {
@@ -390,6 +423,8 @@ function addChoice() {
     toId: node.id,
     require: { itemId: "", minUses: 1 },
     effects: { give: [], consume: [] },
+    effectsEnabled: { give: false, consume: false },
+    confusionDelta: 0,
   };
   node.choices.push(choice);
   saveAll();
@@ -414,7 +449,34 @@ function renderChoiceEditor(node) {
     ensureChoiceShape(c);
 
     const card = document.createElement("div");
-    card.className = "card";
+    card.className = "choice-card";
+
+    const badge = document.createElement("div");
+    badge.className = "choice-badge";
+    badge.textContent = `CHOICE ${idx + 1}`;
+    card.appendChild(badge);
+
+    const hasRequire = !!(c.require?.itemId && String(c.require.itemId).trim());
+    const hasGive = c.effectsEnabled.give && (c.effects?.give?.length ?? 0) > 0;
+    const hasConsume = c.effectsEnabled.consume && (c.effects?.consume?.length ?? 0) > 0;
+    const hasItem = hasGive || hasConsume;
+
+    const topMeta = document.createElement("div");
+    topMeta.className = "choice-topmeta";
+
+    {
+      const p = document.createElement("span");
+      p.className = hasRequire ? "pill-mini require" : "pill-mini muted";
+      p.textContent = hasRequire ? "REQUIRE" : "NO REQUIRE";
+      topMeta.appendChild(p);
+    }
+    if (hasItem) {
+      const p = document.createElement("span");
+      p.className = "pill-mini item";
+      p.textContent = "ITEM";
+      topMeta.appendChild(p);
+    }
+    card.appendChild(topMeta);
 
     const head = document.createElement("div");
     head.className = "card-title";
@@ -422,17 +484,19 @@ function renderChoiceEditor(node) {
     left.textContent = `#${idx + 1}`;
     const pill = document.createElement("div");
     pill.className = "pill";
-    pill.textContent = `to: ${c.toId}`;
+    pill.textContent = `to: ${formatId(c.toId)}`;
     head.append(left, pill);
 
+    // TEXT
     const fText = document.createElement("label");
-    fText.className = "field";
+    fText.className = "field choice-main";
     fText.innerHTML = `<span class="label">텍스트</span>`;
     const iText = document.createElement("input");
     iText.value = c.text ?? "";
     iText.addEventListener("input", () => { c.text = iText.value; saveAll(); });
     fText.appendChild(iText);
 
+    // TO
     const fTo = document.createElement("label");
     fTo.className = "field";
     fTo.innerHTML = `<span class="label">대상 노드(toId)</span>`;
@@ -440,17 +504,43 @@ function renderChoiceEditor(node) {
     state.nodes.slice().sort((a,b)=>a.id-b.id).forEach((n) => {
       const opt = document.createElement("option");
       opt.value = String(n.id);
-      opt.textContent = `${n.id} · ${n.title?.trim() ? n.title : "제목 없음"}`;
+      opt.textContent = `${formatId(n.id)} · ${n.title?.trim() ? n.title : "제목 없음"}`;
       if (n.id === c.toId) opt.selected = true;
       sTo.appendChild(opt);
     });
-    sTo.addEventListener("change", () => {
-      c.toId = Number(sTo.value);
-      pill.textContent = `to: ${c.toId}`;
-      saveAll();
-    });
     fTo.appendChild(sTo);
 
+    const toChip = document.createElement("div");
+    toChip.className = "to-chip";
+    toChip.innerHTML = `<span class="arrow">→</span><span>${formatId(c.toId)}</span>`;
+    fTo.appendChild(toChip);
+
+    sTo.addEventListener("change", () => {
+      c.toId = Number(sTo.value);
+      pill.textContent = `to: ${formatId(c.toId)}`;
+      toChip.querySelector("span:last-child").textContent = formatId(c.toId);
+      saveAll();
+    });
+
+    // 혼란 변화값 (편집자만 보는 값)
+    const fConf = document.createElement("label");
+    fConf.className = "field";
+    fConf.innerHTML = `<span class="label">혼란 변화값 (선택지 클릭 시, 내부값만 / 0~10으로 클램프됨)</span>`;
+    const iConf = document.createElement("input");
+    iConf.type = "number";
+    iConf.step = "1";
+    iConf.value = String(c.confusionDelta ?? 0);
+    iConf.addEventListener("input", () => {
+      const n = parseInt(iConf.value || "0", 10);
+      c.confusionDelta = Number.isFinite(n) ? n : 0; // delta는 입력 그대로(± 가능), 적용 시 clamp
+      saveAll();
+    });
+    fConf.appendChild(iConf);
+
+    const div1 = document.createElement("div");
+    div1.className = "choice-divider";
+
+    // Require
     const reqWrap = document.createElement("div");
     reqWrap.className = "grid2";
 
@@ -469,7 +559,7 @@ function renderChoiceEditor(node) {
       if (c.require.itemId === it.itemId) opt.selected = true;
       sReq.appendChild(opt);
     });
-    sReq.addEventListener("change", () => { c.require.itemId = sReq.value; saveAll(); });
+    sReq.addEventListener("change", () => { c.require.itemId = sReq.value; saveAll(); renderChoiceEditor(node); });
     fReqItem.appendChild(sReq);
 
     const fReqUses = document.createElement("label");
@@ -485,9 +575,47 @@ function renderChoiceEditor(node) {
 
     reqWrap.append(fReqItem, fReqUses);
 
+    const reqBox = document.createElement("div");
+    reqBox.className = "choice-sub require";
+    reqBox.innerHTML = `<div class="subhead"><span>Require</span><span>조건</span></div>`;
+    reqBox.appendChild(reqWrap);
+
+    // Effects box (toggles + conditional UI)
+    const effBox = document.createElement("div");
+    effBox.className = "choice-sub effects";
+    effBox.innerHTML = `<div class="subhead"><span>Effects</span><span>아이템</span></div>`;
+
+    const toggles = document.createElement("div");
+    toggles.className = "grid2";
+
+    const tGive = document.createElement("label");
+    tGive.className = "field checkbox";
+    tGive.innerHTML = `<input type="checkbox" /> <span>아이템 획득(Give) 사용</span>`;
+    const tGiveInput = tGive.querySelector("input");
+    tGiveInput.checked = !!c.effectsEnabled.give;
+    tGiveInput.addEventListener("change", () => {
+      c.effectsEnabled.give = tGiveInput.checked;
+      saveAll();
+      renderChoiceEditor(node);
+    });
+
+    const tConsume = document.createElement("label");
+    tConsume.className = "field checkbox";
+    tConsume.innerHTML = `<input type="checkbox" /> <span>아이템 사용/소모(Consume) 사용</span>`;
+    const tConsumeInput = tConsume.querySelector("input");
+    tConsumeInput.checked = !!c.effectsEnabled.consume;
+    tConsumeInput.addEventListener("change", () => {
+      c.effectsEnabled.consume = tConsumeInput.checked;
+      saveAll();
+      renderChoiceEditor(node);
+    });
+
+    toggles.append(tGive, tConsume);
+    effBox.appendChild(toggles);
+
+    // Give UI
     const giveBox = document.createElement("div");
     giveBox.className = "card";
-    giveBox.style.marginTop = "10px";
     giveBox.innerHTML = `<div class="card-title"><div>획득(Give)</div><div class="pill">선택지 클릭 시</div></div>`;
     const giveRow = document.createElement("div");
     giveRow.className = "grid2";
@@ -520,6 +648,7 @@ function renderChoiceEditor(node) {
     });
     giveRow.append(sGive, iGiveCount);
     giveBox.append(giveRow, btnGive);
+
     const giveSummary = document.createElement("div");
     giveSummary.className = "hint tiny";
     giveSummary.style.marginTop = "8px";
@@ -528,6 +657,7 @@ function renderChoiceEditor(node) {
       : "없음";
     giveBox.appendChild(giveSummary);
 
+    // Consume UI
     const conBox = document.createElement("div");
     conBox.className = "card";
     conBox.style.marginTop = "10px";
@@ -563,6 +693,7 @@ function renderChoiceEditor(node) {
     });
     conRow.append(sCon, iAmt);
     conBox.append(conRow, btnCon);
+
     const conSummary = document.createElement("div");
     conSummary.className = "hint tiny";
     conSummary.style.marginTop = "8px";
@@ -571,6 +702,10 @@ function renderChoiceEditor(node) {
       : "없음";
     conBox.appendChild(conSummary);
 
+    if (c.effectsEnabled.give) effBox.appendChild(giveBox);
+    if (c.effectsEnabled.consume) effBox.appendChild(conBox);
+
+    // Choice delete
     const btnDel = document.createElement("button");
     btnDel.className = "btn danger";
     btnDel.type = "button";
@@ -583,12 +718,7 @@ function renderChoiceEditor(node) {
       toast("선택지 삭제");
     });
 
-    card.append(head, fText, fTo);
-    const reqHint = document.createElement("div");
-    reqHint.className = "hint tiny";
-    reqHint.textContent = "요구(require): 인벤토리에 해당 아이템 인스턴스가 있고 usesLeft가 최소값 이상이면 활성";
-    card.append(reqHint, reqWrap, giveBox, conBox, btnDel);
-
+    card.append(head, fText, fTo, fConf, div1, reqBox, effBox, btnDel);
     wrap.appendChild(card);
   });
 }
@@ -600,12 +730,15 @@ function ensureRunInitialized() {
     const node1 = state.nodes.find((n) => n.id === 1);
     state.run.currentNodeId = node1 ? 1 : Math.min(...state.nodes.map((n) => n.id));
     state.run.inventory = [];
+    state.run.confusion = 0;
   }
+  state.run.confusion = clampConfusion(state.run.confusion);
 }
 
 function resetRun() {
   state.run.currentNodeId = null;
   state.run.inventory = [];
+  state.run.confusion = 0;
   ensureRunInitialized();
   renderRun();
   toast("리셋");
@@ -676,40 +809,47 @@ function pickConsumableInstanceIndex(itemId) {
   return bestIdx;
 }
 
-function applyEffects(effects) {
+function applyEffects(effects, enabled) {
   if (!effects) return;
 
-  (effects.give ?? []).forEach((g) => {
-    const item = state.items.find((it) => it.itemId === g.itemId);
-    if (!item) return;
-    const count = Number.isFinite(g.count) ? g.count : 1;
+  const enGive = enabled?.give ?? true;
+  const enConsume = enabled?.consume ?? true;
 
-    for (let i = 0; i < count; i++) {
-      state.run.inventory.push({
-        instanceId: state.nextInstanceId++,
-        itemId: item.itemId,
-        usesLeft: item.maxUses == null ? null : item.maxUses,
-      });
-    }
-  });
+  if (enGive) {
+    (effects.give ?? []).forEach((g) => {
+      const item = state.items.find((it) => it.itemId === g.itemId);
+      if (!item) return;
+      const count = Number.isFinite(g.count) ? g.count : 1;
 
-  (effects.consume ?? []).forEach((k) => {
-    const amount = Number.isFinite(k.amount) ? k.amount : 1;
-    for (let t = 0; t < amount; t++) {
-      const idx = pickConsumableInstanceIndex(k.itemId);
-      if (idx < 0) break;
-
-      const inst = state.run.inventory[idx];
-      if (inst.usesLeft == null) continue;
-
-      inst.usesLeft -= 1;
-      const item = state.items.find((it) => it.itemId === k.itemId);
-      const consumable = item?.consumable ?? true;
-      if (consumable && inst.usesLeft <= 0) {
-        state.run.inventory.splice(idx, 1);
+      for (let i = 0; i < count; i++) {
+        state.run.inventory.push({
+          instanceId: state.nextInstanceId++,
+          itemId: item.itemId,
+          usesLeft: item.maxUses == null ? null : item.maxUses,
+        });
       }
-    }
-  });
+    });
+  }
+
+  if (enConsume) {
+    (effects.consume ?? []).forEach((k) => {
+      const amount = Number.isFinite(k.amount) ? k.amount : 1;
+      for (let t = 0; t < amount; t++) {
+        const idx = pickConsumableInstanceIndex(k.itemId);
+        if (idx < 0) break;
+
+        const inst = state.run.inventory[idx];
+        if (inst.usesLeft == null) continue;
+
+        inst.usesLeft -= 1;
+        const item = state.items.find((it) => it.itemId === k.itemId);
+        const consumable = item?.consumable ?? true;
+        if (consumable && inst.usesLeft <= 0) {
+          state.run.inventory.splice(idx, 1);
+        }
+      }
+    });
+  }
 }
 
 function renderRun() {
@@ -720,6 +860,7 @@ function renderRun() {
   const titleEl = $("#previewTitle");
   const bodyEl = $("#previewBody");
   const wrap = $("#previewChoices");
+  const preview = $("#previewArea");
 
   if (!titleEl || !bodyEl || !wrap) return;
 
@@ -730,7 +871,7 @@ function renderRun() {
     return;
   }
 
-  titleEl.textContent = node.title?.trim() ? node.title : `노드 ${node.id}`;
+  titleEl.textContent = node.title?.trim() ? node.title : `노드 ${formatId(node.id)}`;
   bodyEl.textContent = node.body?.trim() ? node.body : "(내용 없음)";
 
   wrap.innerHTML = "";
@@ -754,16 +895,24 @@ function renderRun() {
     btn.disabled = !ok;
 
     const label = c.text?.trim() ? c.text : "선택지";
-    btn.textContent = ok ? label : `${label} (조건 부족)`;
+    btn.textContent = label; // ✅ 불친절/힌트 제거: 조건 부족 안내 문구 없음
 
     btn.addEventListener("click", () => {
-      applyEffects(c.effects);
+      // ✅ 혼란 적용(내부값만) + 0~10 클램프
+      state.run.confusion = clampConfusion(state.run.confusion + (c.confusionDelta ?? 0));
+
+      // ✅ 아이템 효과 적용(토글된 것만)
+      applyEffects(c.effects, c.effectsEnabled);
+
       state.run.currentNodeId = c.toId;
       renderRun();
     });
 
     wrap.appendChild(btn);
   });
+
+  // ✅ 혼란 단계 기반 미세 UI (수치/게이지 없음)
+  if (preview) preview.dataset.confusion = confusionStage(state.run.confusion);
 }
 
 // ---------------- utils ----------------
@@ -793,10 +942,51 @@ function seedIfEmpty() {
       n1.title = "시작";
       n1.body = "선택지를 눌러 아이템을 얻거나 사용해보자.";
       n1.choices = [
-        { id: cryptoId(), text: "열쇠 얻기(+key x1)", toId: 1, require: { itemId: "", minUses: 1 }, effects: { give: [{ itemId: "key", count: 1 }], consume: [] } },
-        { id: cryptoId(), text: "열쇠 사용(uses -1)", toId: 1, require: { itemId: "key", minUses: 1 }, effects: { give: [], consume: [{ itemId: "key", amount: 1 }] } },
-        { id: cryptoId(), text: "패스권 얻기(+ticket x1, 무제한)", toId: 1, require: { itemId: "", minUses: 1 }, effects: { give: [{ itemId: "ticket", count: 1 }], consume: [] } },
-        { id: cryptoId(), text: "패스권 사용(무제한)", toId: 1, require: { itemId: "ticket", minUses: 1 }, effects: { give: [], consume: [{ itemId: "ticket", amount: 1 }] } },
+        {
+          id: cryptoId(),
+          text: "열쇠 얻기(+key x1)",
+          toId: 1,
+          require: { itemId: "", minUses: 1 },
+          effects: { give: [{ itemId: "key", count: 1 }], consume: [] },
+          effectsEnabled: { give: true, consume: false },
+          confusionDelta: 0,
+        },
+        {
+          id: cryptoId(),
+          text: "열쇠 사용(uses -1)",
+          toId: 1,
+          require: { itemId: "key", minUses: 1 },
+          effects: { give: [], consume: [{ itemId: "key", amount: 1 }] },
+          effectsEnabled: { give: false, consume: true },
+          confusionDelta: 0,
+        },
+        {
+          id: cryptoId(),
+          text: "패스권 얻기(+ticket x1)",
+          toId: 1,
+          require: { itemId: "", minUses: 1 },
+          effects: { give: [{ itemId: "ticket", count: 1 }], consume: [] },
+          effectsEnabled: { give: true, consume: false },
+          confusionDelta: 0,
+        },
+        {
+          id: cryptoId(),
+          text: "패스권 사용(무제한)",
+          toId: 1,
+          require: { itemId: "ticket", minUses: 1 },
+          effects: { give: [], consume: [{ itemId: "ticket", amount: 1 }] },
+          effectsEnabled: { give: false, consume: true },
+          confusionDelta: 0,
+        },
+        {
+          id: cryptoId(),
+          text: "혼란 +3 (테스트)",
+          toId: 1,
+          require: { itemId: "", minUses: 1 },
+          effects: { give: [], consume: [] },
+          effectsEnabled: { give: false, consume: false },
+          confusionDelta: 3,
+        },
       ];
     }
     saveAll();
