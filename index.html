@@ -2,11 +2,79 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Node Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GameMaker - Mobile UI Skeleton</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <h1>Node Builder</h1>
-  <p>GitHub Pages 배포 테스트</p>
+  <header class="topbar">
+    <div class="brand">게임만들기</div>
+    <div class="topbar-actions">
+      <button id="btnAddNode" class="btn primary" type="button">+ 노드 추가</button>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="panel" id="panel-nodes" data-panel="nodes" aria-label="노드 목록">
+      <div class="panel-header">
+        <h2>노드</h2>
+        <div class="hint">탭: 노드 / 편집 / 미리보기</div>
+      </div>
+
+      <ul id="nodeList" class="node-list" aria-label="노드 리스트"></ul>
+    </section>
+
+    <section class="panel hidden" id="panel-editor" data-panel="editor" aria-label="편집">
+      <div class="panel-header">
+        <h2>편집</h2>
+        <div class="hint">노드를 선택하면 여기서 내용 편집</div>
+      </div>
+
+      <div class="editor">
+        <label class="field">
+          <span class="label">선택 노드</span>
+          <input id="selectedNodeTitle" type="text" placeholder="노드 제목" />
+        </label>
+
+        <label class="field">
+          <span class="label">텍스트</span>
+          <textarea id="selectedNodeBody" rows="8" placeholder="노드 내용..."></textarea>
+        </label>
+
+        <div class="row">
+          <button id="btnSaveNode" class="btn" type="button">저장</button>
+          <button id="btnDeleteNode" class="btn danger" type="button">삭제</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="panel-preview" data-panel="preview" aria-label="미리보기">
+      <div class="panel-header">
+        <h2>미리보기</h2>
+        <div class="hint">선택 노드가 어떻게 보일지</div>
+      </div>
+
+      <article class="preview" id="previewArea">
+        <div class="preview-title" id="previewTitle">노드를 선택하세요</div>
+        <div class="preview-body" id="previewBody">왼쪽(노드 탭)에서 노드를 고르면 이곳에 표시됩니다.</div>
+      </article>
+    </section>
+  </main>
+
+  <nav class="tabbar" role="tablist" aria-label="하단 탭">
+    <button class="tab active" data-tab="nodes" role="tab" aria-selected="true" type="button">
+      <span class="tab-emoji">🧩</span><span class="tab-text">노드</span>
+    </button>
+    <button class="tab" data-tab="editor" role="tab" aria-selected="false" type="button">
+      <span class="tab-emoji">✍️</span><span class="tab-text">편집</span>
+    </button>
+    <button class="tab" data-tab="preview" role="tab" aria-selected="false" type="button">
+      <span class="tab-emoji">👀</span><span class="tab-text">미리보기</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./app.js"></script>
 </body>
 </html>
