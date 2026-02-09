@@ -347,7 +347,7 @@ textarea{ resize:none; }
 .choice-card{
   position: relative;
   /* 기존 값이 padding: 16px 12px 12px; 라면 */
-  padding: 32px 12px 12px;  /* ✅ 위쪽만 늘림 */
+  padding: 38px 12px 12px;  /* ✅ 위쪽만 늘림 */
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.035);
