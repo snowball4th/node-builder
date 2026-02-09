@@ -347,7 +347,7 @@ textarea{ resize:none; }
 .choice-card{
   position: relative;
   /* 기존 값이 padding: 16px 12px 12px; 라면 */
-  padding: 26px 12px 12px;  /* ✅ 위쪽만 늘림 */
+  padding: 32px 12px 12px;  /* ✅ 위쪽만 늘림 */
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.035);
@@ -477,13 +477,6 @@ textarea{ resize:none; }
 #previewArea[data-confusion="uneasy"] .preview-body,
 #previewArea[data-confusion="danger"] .preview-body{
   opacity: .94;
-}
-/* prevent top-right meta pills overlap on narrow widths */
-.choice-topmeta{
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  max-width: 56%;
-  gap: 6px;
 }
 
 .pill-mini{
