@@ -32,28 +32,45 @@
       </div>
 
       <div class="editor">
-        <label class="field">
-          <span class="label">선택 노드 ID</span>
-          <input id="selectedNodeId" type="text" disabled />
-        </label>
 
-        <label class="field">
-          <span class="label">제목</span>
-          <input id="selectedNodeTitle" type="text" placeholder="예: 낚싯대가 부러졌다" />
-        </label>
-
-        <label class="field">
-          <span class="label">텍스트</span>
-          <textarea id="selectedNodeBody" rows="6" placeholder="노드 내용..."></textarea>
-        </label>
-
-        <div class="section">
-          <div class="section-head">
-            <div class="section-title">선택지</div>
-            <button id="btnAddChoice" class="btn" type="button">+ 선택지 추가</button>
+        <!-- ✅ Node block -->
+        <div class="section-block node">
+          <div class="section-titlebar">
+            <div class="title">Node</div>
+            <div class="sub">제목 / 본문</div>
           </div>
-          <div id="choiceList" class="choice-list"></div>
-          <div class="hint tiny">선택지는 ‘미리보기’에서 클릭하면 효과(아이템 획득/사용)가 적용되고 다음 노드로 이동해.</div>
+
+          <label class="field">
+            <span class="label">선택 노드 ID</span>
+            <input id="selectedNodeId" type="text" disabled />
+          </label>
+
+          <label class="field">
+            <span class="label">제목</span>
+            <input id="selectedNodeTitle" type="text" placeholder="예: 낚싯대가 부러졌다" />
+          </label>
+
+          <label class="field">
+            <span class="label">텍스트</span>
+            <textarea id="selectedNodeBody" rows="6" placeholder="노드 내용..."></textarea>
+          </label>
+        </div>
+
+        <!-- ✅ Choices block -->
+        <div class="section-block choices">
+          <div class="section-titlebar">
+            <div class="title">Choices</div>
+            <div class="sub">텍스트 / 이동 / 조건 / 아이템</div>
+          </div>
+
+          <div class="section" style="margin:0; padding-top:0; border-top:0;">
+            <div class="section-head">
+              <div class="section-title">선택지</div>
+              <button id="btnAddChoice" class="btn" type="button">+ 선택지 추가</button>
+            </div>
+            <div id="choiceList" class="choice-list"></div>
+            <div class="hint tiny">선택지는 ‘미리보기’에서 클릭하면 효과(아이템 획득/사용)가 적용되고 다음 노드로 이동해.</div>
+          </div>
         </div>
 
         <div class="row">
