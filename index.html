@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GameMaker - Mobile UI Skeleton</title>
+  <title>게임만들기 - 노드 빌더</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
@@ -15,31 +15,46 @@
   </header>
 
   <main class="app">
+    <!-- NODES -->
     <section class="panel" id="panel-nodes" data-panel="nodes" aria-label="노드 목록">
       <div class="panel-header">
         <h2>노드</h2>
-        <div class="hint">탭: 노드 / 편집 / 미리보기</div>
+        <div class="hint">탭: 노드 / 편집 / 미리보기 / 아이템</div>
       </div>
-
       <ul id="nodeList" class="node-list" aria-label="노드 리스트"></ul>
     </section>
 
+    <!-- EDITOR -->
     <section class="panel hidden" id="panel-editor" data-panel="editor" aria-label="편집">
       <div class="panel-header">
         <h2>편집</h2>
-        <div class="hint">노드를 선택하면 여기서 내용 편집</div>
+        <div class="hint">노드 선택 → 제목/내용/선택지/규칙 편집</div>
       </div>
 
       <div class="editor">
         <label class="field">
-          <span class="label">선택 노드</span>
-          <input id="selectedNodeTitle" type="text" placeholder="노드 제목" />
+          <span class="label">선택 노드 ID</span>
+          <input id="selectedNodeId" type="text" disabled />
+        </label>
+
+        <label class="field">
+          <span class="label">제목</span>
+          <input id="selectedNodeTitle" type="text" placeholder="예: 낚싯대가 부러졌다" />
         </label>
 
         <label class="field">
           <span class="label">텍스트</span>
-          <textarea id="selectedNodeBody" rows="8" placeholder="노드 내용..."></textarea>
+          <textarea id="selectedNodeBody" rows="6" placeholder="노드 내용..."></textarea>
         </label>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">선택지</div>
+            <button id="btnAddChoice" class="btn" type="button">+ 선택지 추가</button>
+          </div>
+          <div id="choiceList" class="choice-list"></div>
+          <div class="hint tiny">선택지는 ‘미리보기’에서 클릭하면 효과(아이템 획득/사용)가 적용되고 다음 노드로 이동해.</div>
+        </div>
 
         <div class="row">
           <button id="btnSaveNode" class="btn" type="button">저장</button>
@@ -48,16 +63,92 @@
       </div>
     </section>
 
+    <!-- PREVIEW (PLAY) -->
     <section class="panel hidden" id="panel-preview" data-panel="preview" aria-label="미리보기">
       <div class="panel-header">
         <h2>미리보기</h2>
-        <div class="hint">선택 노드가 어떻게 보일지</div>
+        <div class="hint">플레이 모드: 선택지 클릭 → 조건 검사 → 효과 적용 → 다음 노드</div>
       </div>
 
-      <article class="preview" id="previewArea">
-        <div class="preview-title" id="previewTitle">노드를 선택하세요</div>
-        <div class="preview-body" id="previewBody">왼쪽(노드 탭)에서 노드를 고르면 이곳에 표시됩니다.</div>
-      </article>
+      <div class="preview-split">
+        <aside class="inv">
+          <div class="inv-head">
+            <div class="inv-title">인벤토리</div>
+            <button id="btnResetRun" class="btn" type="button">리셋</button>
+          </div>
+          <div id="invList" class="inv-list"></div>
+          <div class="hint tiny">아이템은 인스턴스 단위(개별)로 존재하며, 선택지에서 사용(uses 감소)돼.</div>
+        </aside>
+
+        <article class="preview" id="previewArea">
+          <div class="preview-title" id="previewTitle">시작</div>
+          <div class="preview-body" id="previewBody">왼쪽에서 시작 노드를 선택하거나, 노드 1부터 시작해.</div>
+
+          <div class="preview-choices" id="previewChoices"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ITEMS -->
+    <section class="panel hidden" id="panel-items" data-panel="items" aria-label="아이템">
+      <div class="panel-header">
+        <h2>아이템</h2>
+        <div class="hint">아이템 정의(타입) 생성/편집: maxUses=숫자 또는 무제한</div>
+      </div>
+
+      <div class="editor">
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">아이템 목록</div>
+            <button id="btnAddItem" class="btn" type="button">+ 아이템 추가</button>
+          </div>
+          <div id="itemList" class="item-list"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">선택 아이템 편집</div>
+          </div>
+
+          <div class="grid2">
+            <label class="field">
+              <span class="label">itemId(내부 키)</span>
+              <input id="selectedItemId" type="text" placeholder="예: key, medkit" />
+            </label>
+
+            <label class="field">
+              <span class="label">표시 이름</span>
+              <input id="selectedItemName" type="text" placeholder="예: 낡은 열쇠" />
+            </label>
+          </div>
+
+          <div class="grid2">
+            <label class="field">
+              <span class="label">사용 회수</span>
+              <input id="selectedItemMaxUses" type="number" min="1" step="1" placeholder="예: 3" />
+            </label>
+
+            <label class="field checkbox">
+              <input id="selectedItemInfinite" type="checkbox" />
+              <span>무제한</span>
+            </label>
+          </div>
+
+          <label class="field checkbox">
+            <input id="selectedItemConsumable" type="checkbox" checked />
+            <span>소모형(uses 0 되면 삭제)</span>
+          </label>
+
+          <div class="row">
+            <button id="btnSaveItem" class="btn" type="button">아이템 저장</button>
+            <button id="btnDeleteItem" class="btn danger" type="button">아이템 삭제</button>
+          </div>
+
+          <div class="hint tiny">
+            itemId는 중복되면 안 돼. (예: key, knife, coin 같은 짧은 키)
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -71,10 +162,12 @@
     <button class="tab" data-tab="preview" role="tab" aria-selected="false" type="button">
       <span class="tab-emoji">👀</span><span class="tab-text">미리보기</span>
     </button>
+    <button class="tab" data-tab="items" role="tab" aria-selected="false" type="button">
+      <span class="tab-emoji">🎒</span><span class="tab-text">아이템</span>
+    </button>
   </nav>
 
   <div class="toast" id="toast" aria-live="polite" aria-atomic="true"></div>
-
   <script src="./app.js"></script>
 </body>
 </html>
