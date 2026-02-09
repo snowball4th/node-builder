@@ -489,3 +489,14 @@ textarea{ resize:none; }
 #previewArea[data-confusion="danger"] .preview-body{
   opacity: .94;
 }
+
+.item-variant{
+  border:1px solid rgba(255,255,255,.15);
+  padding:8px;
+  margin-bottom:8px;
+}
+
+.item-variant input[type="file"]{
+  font-size:12px;
+}
+
