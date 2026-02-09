@@ -346,8 +346,7 @@ textarea{ resize:none; }
 
 .choice-card{
   position: relative;
-  /* 기존 값이 padding: 16px 12px 12px; 라면 */
-  padding: 38px 12px 12px;  /* ✅ 위쪽만 늘림 */
+  padding: 16px 12px 12px;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.035);
@@ -371,17 +370,12 @@ textarea{ resize:none; }
 }
 
 .choice-topmeta{
-  position:absolute;
-  top:10px;
-  right:10px;
-  display:flex;
-  gap:6px;
-  align-items:center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
-  flex-wrap: wrap;      /* ✅ 추가 */
-  max-width: 60%;       /* ✅ 추가 */
+  margin-bottom: 10px;   /* 카드 안 여백 */
 }
-
 
 .pill-mini{
   font-size: 11px;
@@ -393,17 +387,29 @@ textarea{ resize:none; }
   line-height: 1;
   white-space: nowrap;
 }
-.pill-mini.require{
-  border-color: rgba(79,124,255,.30);
-  background: rgba(79,124,255,.12);
-  color: rgba(183,206,255,.95);
+
+/* CHOICE 식별자 */
+.pill-mini.choice{
+  border-color: rgba(255,184,107,.40);
+  background: rgba(255,184,107,.18);
+  color: rgba(255,184,107,.95);
+  font-weight: 800;
+  letter-spacing: .03em;
 }
-.pill-mini.item{
-  border-color: rgba(255,184,107,.30);
-  background: rgba(255,184,107,.12);
-  color: rgba(255,216,176,.95);
+
+/* 이동(to) */
+.pill-mini.to{
+  border-color: rgba(79,124,255,.40);
+  background: rgba(79,124,255,.16);
+  color: rgba(210,224,255,.95);
+  font-weight: 650;
 }
-.pill-mini.muted{ opacity:.75; }
+
+/* 상태/비활성 */
+.pill-mini.muted{
+  opacity: .75;
+}
+
 
 .choice-main input{
   font-size: 15px;
@@ -413,15 +419,19 @@ textarea{ resize:none; }
 .to-chip{
   display:inline-flex;
   align-items:center;
-  gap:8px;
-  padding: 6px 10px;
+  gap:6px;
+
+  padding: 4px 8px;          /* pill-mini와 동일 */
   border-radius: 999px;
-  border: 1px solid rgba(79,124,255,.35);
+  border: 1px solid rgba(79,124,255,.30);
   background: rgba(79,124,255,.12);
   color: rgba(210,224,255,.95);
-  font-size: 12px;
-  font-weight: 650;
+
+  font-size: 11px;           /* pill-mini와 동일 */
+  font-weight: 600;          /* 살짝만 강조 */
+  line-height: 1;            /* 높이 핵심 */
 }
+
 .to-chip .arrow{ opacity:.9; }
 
 .choice-divider{
