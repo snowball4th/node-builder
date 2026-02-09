@@ -290,7 +290,7 @@ function renderItems() {
     pill.className = "pill";
     pill.textContent = it.maxUses == null ? "무제한" : `uses ${it.maxUses}`;
 
-    head.append(left, pill);
+    head.append(left);
 
     const sub = document.createElement("div");
     sub.className = "hint tiny";
@@ -451,11 +451,6 @@ function renderChoiceEditor(node) {
     const card = document.createElement("div");
     card.className = "choice-card";
 
-    const badge = document.createElement("div");
-    badge.className = "choice-badge";
-    badge.textContent = `CHOICE ${idx + 1}`;
-    card.appendChild(badge);
-
     const hasRequire = !!(c.require?.itemId && String(c.require.itemId).trim());
     const hasGive = c.effectsEnabled.give && (c.effects?.give?.length ?? 0) > 0;
     const hasConsume = c.effectsEnabled.consume && (c.effects?.consume?.length ?? 0) > 0;
@@ -464,28 +459,32 @@ function renderChoiceEditor(node) {
     const topMeta = document.createElement("div");
     topMeta.className = "choice-topmeta";
 
-    {
-      const p = document.createElement("span");
-      p.className = hasRequire ? "pill-mini require" : "pill-mini muted";
-      p.textContent = hasRequire ? "REQUIRE" : "NO REQUIRE";
-      topMeta.appendChild(p);
-    }
-    if (hasItem) {
-      const p = document.createElement("span");
-      p.className = "pill-mini item";
-      p.textContent = "ITEM";
-      topMeta.appendChild(p);
-    }
+
+    // --- TOP META (one-row pills) ---
+    const topMeta = document.createElement("div");
+    topMeta.className = "choice-topmeta";
+
+    const pillChoice = document.createElement("span");
+    pillChoice.className = "pill-mini choice";
+    pillChoice.textContent = `CHOICE ${idx + 1}`;
+    topMeta.appendChild(pillChoice);
+
+    const pillReq = document.createElement("span");
+    pillReq.className = hasRequire ? "pill-mini require" : "pill-mini muted";
+    pillReq.textContent = hasRequire ? "REQUIRE" : "NO REQUIRE";
+    topMeta.appendChild(pillReq);
+
+    const pillTo = document.createElement("span");
+    pillTo.className = "pill-mini to";
+    pillTo.textContent = `→ ${formatId(c.toId)}`;
+    topMeta.appendChild(pillTo);
+
     card.appendChild(topMeta);
 
     const head = document.createElement("div");
     head.className = "card-title";
     const left = document.createElement("div");
     left.textContent = `#${idx + 1}`;
-    const pill = document.createElement("div");
-    pill.className = "pill";
-    pill.textContent = `to: ${formatId(c.toId)}`;
-    head.append(left, pill);
 
     // TEXT
     const fText = document.createElement("label");
@@ -510,16 +509,11 @@ function renderChoiceEditor(node) {
     });
     fTo.appendChild(sTo);
 
-    const toChip = document.createElement("div");
-    toChip.className = "to-chip";
-    toChip.innerHTML = `<span class="arrow">→</span><span>${formatId(c.toId)}</span>`;
-    fTo.appendChild(toChip);
-
     sTo.addEventListener("change", () => {
-      c.toId = Number(sTo.value);
-      pill.textContent = `to: ${formatId(c.toId)}`;
-      toChip.querySelector("span:last-child").textContent = formatId(c.toId);
-      saveAll();
+    c.toId = Number(sTo.value);
+    pill.textContent = `to: ${formatId(c.toId)}`;     // (아래 3번에서 pill 제거하면 이 줄도 지워)
+    pillTo.textContent = `→ ${formatId(c.toId)}`;     // ✅ 추가
+    saveAll();
     });
 
     // 혼란 변화값 (편집자만 보는 값)
