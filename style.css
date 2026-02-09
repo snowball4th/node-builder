@@ -488,7 +488,3 @@ textarea{ resize:none; }
 #previewArea[data-confusion="danger"] .preview-body{
   opacity: .94;
 }
-
-.pill-mini{
-  white-space: nowrap;
-}
