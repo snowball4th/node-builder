@@ -472,3 +472,14 @@ textarea{ resize:none; }
 #previewArea[data-confusion="danger"] .preview-body{
   opacity: .94;
 }
+/* prevent top-right meta pills overlap on narrow widths */
+.choice-topmeta{
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 56%;
+  gap: 6px;
+}
+
+.pill-mini{
+  white-space: nowrap;
+}
