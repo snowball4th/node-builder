@@ -461,8 +461,6 @@ function renderChoiceEditor(node) {
 
 
     // --- TOP META (one-row pills) ---
-    const topMeta = document.createElement("div");
-    topMeta.className = "choice-topmeta";
 
     const pillChoice = document.createElement("span");
     pillChoice.className = "pill-mini choice";
