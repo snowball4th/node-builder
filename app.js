@@ -9,6 +9,9 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 const STORAGE_KEY = "node_builder_v2";
+// ✅ 표시용 ID 포맷(내부는 number 그대로)
+const ID_WIDTH = 4;
+function formatId(n){ return String(n).padStart(ID_WIDTH, "0"); }
 
 const state = {
   nodes: [],
@@ -107,7 +110,7 @@ function addNode() {
   saveAll();
   renderNodeList();
   selectNode(id);
-  toast(`노드 ${id} 생성`);
+  toast(`노드 ${formatId(id)} 생성`);
 }
 
 function getSelectedNode() {
@@ -124,7 +127,7 @@ function selectNode(id) {
   const titleEl = $("#selectedNodeTitle");
   const bodyEl = $("#selectedNodeBody");
 
-  if (idEl) idEl.value = String(node.id);
+  if (idEl) idEl.value = formatId(node.id);
   if (titleEl) titleEl.value = node.title ?? "";
   if (bodyEl) bodyEl.value = node.body ?? "";
 
