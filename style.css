@@ -526,3 +526,21 @@ textarea{ resize:none; }
 
 /* choices */
 .choice-row{ margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+
+/* play preview */
+.play-only .play-shell{
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.play-only .preview{
+  width: min(760px, 100%);
+}
+
+.preview-actions{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
