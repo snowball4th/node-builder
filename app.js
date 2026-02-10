@@ -679,8 +679,24 @@ function init(){
     renderRun();
   });
 
-  // Play (new tab)
-  $("#btnPlay")?.addEventListener("click", openPlayTab);
+  const PLAY_SNAPSHOT_KEY = "SG_PLAY_SNAPSHOT";
+
+// Play: "지금 빌더에 있는 게임"을 스냅샷으로 저장하고 런타임 실행
+$("#btnPlay")?.addEventListener("click", () => {
+  const snapshot = {
+    nodes: state.nodes,
+    items: state.items,
+    selectedNodeId: state.selectedNodeId ?? null,
+    savedAt: Date.now(),
+  };
+
+  // 새 탭에서도 읽히게 localStorage 사용
+  localStorage.setItem(PLAY_SNAPSHOT_KEY, JSON.stringify(snapshot));
+
+  // 프로젝트 페이지/유저 페이지 모두 안전한 상대경로
+  window.open("./play.html", "_blank");
+});
+
 
   // Save/Share (download)
   $("#btnShare")?.addEventListener("click", ()=>{
