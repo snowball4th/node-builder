@@ -565,3 +565,19 @@ textarea{ resize:none; }
   padding: 10px 12px;
   border-radius: 12px;
 }
+/* 노드 탭 헤더: 제목 왼쪽 / 버튼 오른쪽 */
+.panel-head-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-head-row .section-title{
+  margin: 0;
+  line-height: 1.1;
+}
+
+.panel-head-row .btn{
+  white-space: nowrap;
+}
