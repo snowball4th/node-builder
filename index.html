@@ -47,7 +47,7 @@
           <textarea id="selectedNodeBody" rows="6" placeholder="노드 내용..."></textarea>
         </label>
 
-        <div class="section">
+        <div class="">
           <div class="section-head">
             <div class="section-title">선택지</div>
             <button id="btnAddChoice" class="btn" type="button">+ 선택지 추가</button>
@@ -127,20 +127,91 @@
   </div>
 
   <!-- 기본 속성 -->
-  <div class="section">
-    <div class="section-head">
-      <div class="section-title">기본 속성</div>
-    </div>
-    ...
+<div class="section">
+  <div class="section-head">
+    <div class="section-title">기본 속성</div>
   </div>
 
-  <!-- 아이템 상태 -->
+  <div class="grid2">
+    <label class="field">
+      <span class="label">수량(qty)</span>
+      <input id="selectedItemQty" type="number" min="0" max="10" step="1" />
+    </label>
+
+    <label class="field">
+      <span class="label">내구(dur)</span>
+      <input id="selectedItemDur" type="number" min="0" max="10" step="1" />
+    </label>
+  </div>
+
+  <div class="hint tiny">qty/dur 범위는 현재 0~10으로 클램프돼.</div>
+</div>
+
+<!-- 아이템 상태 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-title">아이템 상태 (최대 3)</div>
+  </div>
+
+  <!-- base -->
   <div class="section">
     <div class="section-head">
-      <div class="section-title">아이템 상태 (최대 3)</div>
+      <div class="section-title">base (기본)</div>
     </div>
-    ...
+    <div class="grid2">
+      <label class="field">
+        <span class="label">표시명</span>
+        <input id="itemBaseName" type="text" placeholder="예: 낚싯대" />
+      </label>
+      <label class="field">
+        <span class="label">이미지</span>
+        <input id="itemBaseImg" type="file" accept="image/*" />
+      </label>
+    </div>
   </div>
+
+  <!-- dur0 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">dur0 (파손/0)</div>
+    </div>
+    <div class="grid2">
+      <label class="field">
+        <span class="label">표시명</span>
+        <input id="itemBrokenName" type="text" placeholder="예: 부러진 낚싯대" />
+      </label>
+      <label class="field">
+        <span class="label">이미지</span>
+        <input id="itemBrokenImg" type="file" accept="image/*" />
+      </label>
+    </div>
+  </div>
+
+  <!-- special -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">special (특수)</div>
+    </div>
+    <div class="grid2">
+      <label class="field">
+        <span class="label">표시명</span>
+        <input id="itemSpecialName" type="text" placeholder="예: 기묘한 낚싯대" />
+      </label>
+      <label class="field">
+        <span class="label">이미지</span>
+        <input id="itemSpecialImg" type="file" accept="image/*" />
+      </label>
+    </div>
+
+    <label class="field">
+      <span class="label">연결 노드(nodeId)</span>
+      <input id="itemSpecialNode" type="text" placeholder="예: 0007 또는 7" />
+    </label>
+
+    <div class="hint tiny">special.nodeId는 문자열로 저장돼. 필요하면 JS에서 숫자 패딩 처리 가능.</div>
+  </div>
+</div>
+
 
   <!-- 액션 -->
   <div class="row">
