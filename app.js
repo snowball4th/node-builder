@@ -426,7 +426,7 @@ function init(){
 
   $("#btnAddNode")?.addEventListener("click", addNode);
   $("#btnSaveNode")?.addEventListener("click", saveNode);
-  $("#btnAddChoice")?.addEventListener("click", addChoice);
+  //$("#btnAddChoice")?.addEventListener("click", addChoice);
 
   $("#btnAddItem")?.addEventListener("click", addItem);
   $("#btnSaveItem")?.addEventListener("click", saveItem);
@@ -443,3 +443,9 @@ function init(){
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#btnAddChoice")) return;
+  addChoice();
+});
+
