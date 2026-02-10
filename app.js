@@ -136,6 +136,28 @@ function renderNodeList(){
 // ===============================
 // ITEMS (MASTER v3)
 // ===============================
+// --- Items UX helpers ---
+function openItemEditor(){
+  $("#itemEditor")?.classList.remove("hidden");
+}
+function closeItemEditor(){
+  $("#itemEditor")?.classList.add("hidden");
+}
+function setSelectedItemIndex(i){
+  state.selectedItemIndex = i;
+  renderItems(); // selection highlight
+}
+
+// --- itemId normalization / validation ---
+function normalizeItemId(raw){
+  return String(raw ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "");
+}
+function isValidItemId(s){
+  return /^[a-z0-9_-]+$/.test(s);
+}
+
 function addItem(){
   const item = {
     id: "",
@@ -149,9 +171,11 @@ function addItem(){
     }
   };
   state.items.push(item);
-  state.selectedItemIndex = state.items.length-1;
+
+  setSelectedItemIndex(state.items.length - 1);
   saveAll();
   renderItems();
+  openItemEditor();
   loadItemToForm(item);
 }
 
@@ -159,12 +183,14 @@ function renderItems(){
   const wrap = $("#itemList");
   if(!wrap) return;
   wrap.innerHTML = "";
+
   state.items.forEach((it,i)=>{
     const d = document.createElement("div");
-    d.className = "card";
+    d.className = "card" + (i===state.selectedItemIndex ? " selected" : "");
     d.textContent = it.id || "(새 아이템)";
     d.onclick = ()=>{
-      state.selectedItemIndex = i;
+      setSelectedItemIndex(i);
+      openItemEditor();
       loadItemToForm(it);
     };
     wrap.appendChild(d);
@@ -173,7 +199,7 @@ function renderItems(){
 
 function loadItemToForm(item){
   const map = [
-    ["selectedItemId", item.id],
+    ["selectedItemId", normalizeItemId(item.id)],
     ["selectedItemName", item.displayName],
     ["selectedItemQty", item.qty],
     ["selectedItemDur", item.dur],
@@ -199,40 +225,53 @@ function saveItem(){
   const durEl = $("#selectedItemDur");
   if(!idEl || !nameEl || !qtyEl || !durEl) return;
 
-  it.id = idEl.value.trim();
+  const id = normalizeItemId(idEl.value.trim());
+  idEl.value = id;
+
+  if(!id){
+    toast("itemId를 입력해줘");
+    idEl.focus();
+    return;
+  }
+  if(!isValidItemId(id)){
+    toast("itemId는 a-z 0-9 _ - 만 가능");
+    idEl.focus();
+    return;
+  }
+  const dup = state.items.some((x, idx)=> idx!==state.selectedItemIndex && x.id === id);
+  if(dup){
+    toast("itemId가 중복됨");
+    idEl.focus();
+    return;
+  }
+
+  it.id = id;
   it.displayName = nameEl.value.trim();
   it.qty = clamp(qtyEl.value,0,10);
   it.dur = clamp(durEl.value,0,10);
 
-  const baseName = $("#itemBaseName");
-  const brokenName = $("#itemBrokenName");
-  const specialName = $("#itemSpecialName");
-  const specialNode = $("#itemSpecialNode");
+  it.variants.base.name = $("#itemBaseName")?.value.trim() ?? "";
+  it.variants.dur0.name = $("#itemBrokenName")?.value.trim() ?? "";
+  it.variants.special.name = $("#itemSpecialName")?.value.trim() ?? "";
+  it.variants.special.nodeId = $("#itemSpecialNode")?.value.trim() ?? "";
 
-  if(baseName) it.variants.base.name = baseName.value.trim();
-  if(brokenName) it.variants.dur0.name = brokenName.value.trim();
-  if(specialName) it.variants.special.name = specialName.value.trim();
-  if(specialNode) it.variants.special.nodeId = specialNode.value.trim();
-
-  const baseImg = $("#itemBaseImg");
-  const brokenImg = $("#itemBrokenImg");
-  const specialImg = $("#itemSpecialImg");
-
-  if(baseImg?.files?.[0]) it.variants.base.img = baseImg.files[0];
-  if(brokenImg?.files?.[0]) it.variants.dur0.img = brokenImg.files[0];
-  if(specialImg?.files?.[0]) it.variants.special.img = specialImg.files[0];
+  if($("#itemBaseImg")?.files?.[0]) it.variants.base.img = $("#itemBaseImg").files[0];
+  if($("#itemBrokenImg")?.files?.[0]) it.variants.dur0.img = $("#itemBrokenImg").files[0];
+  if($("#itemSpecialImg")?.files?.[0]) it.variants.special.img = $("#itemSpecialImg").files[0];
 
   saveAll();
   renderItems();
   toast("아이템 저장");
+  closeItemEditor();
 }
 
 function deleteItem(){
   if(state.selectedItemIndex<0) return;
   state.items.splice(state.selectedItemIndex,1);
-  state.selectedItemIndex = state.items.length?0:-1;
+  state.selectedItemIndex = state.items.length ? 0 : -1;
   saveAll();
   renderItems();
+  closeItemEditor();
 }
 
 // ===============================
@@ -269,7 +308,10 @@ function switchTab(name){
   });
 
   if(name==="preview") renderRun();
-  if(name==="items") renderItems();
+  if(name==="items"){
+    renderItems();
+    closeItemEditor(); // 기본은 목록만
+  }
 }
 
 function init(){
@@ -277,12 +319,22 @@ function init(){
   renderNodeList();
   if(state.selectedNodeId) selectNode(state.selectedNodeId);
 
+  // items: 기본은 목록만
+  closeItemEditor();
+
   $("#btnAddNode")?.addEventListener("click", addNode);
   $("#btnSaveNode")?.addEventListener("click", saveNode);
 
   $("#btnAddItem")?.addEventListener("click", addItem);
   $("#btnSaveItem")?.addEventListener("click", saveItem);
   $("#btnDeleteItem")?.addEventListener("click", deleteItem);
+
+  // itemId: 실시간 소문자/허용문자만
+  $("#selectedItemId")?.addEventListener("input", (e)=>{
+    const el = e.target;
+    const next = normalizeItemId(el.value);
+    if(el.value !== next) el.value = next;
+  });
 
   $$(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 }
