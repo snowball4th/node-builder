@@ -544,3 +544,24 @@ textarea{ resize:none; }
   gap: 8px;
   align-items: center;
 }
+
+.section-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 오른쪽 끝으로 */
+  gap: 12px;
+  margin-bottom: 10px; /* 제목 아래 여백(필요시 조절) */
+  flex-wrap: nowrap;
+}
+
+.section-title{
+  margin: 0;           /* 제목 기본 여백 제거 */
+  line-height: 1.1;
+}
+
+/* 버튼이 너무 커 보이면(선택) */
+.section-head .btn{
+  white-space: nowrap;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
