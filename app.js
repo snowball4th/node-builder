@@ -103,6 +103,7 @@ function selectNode(id){
   titleEl.value = n.title;
   bodyEl.value = n.body;
   renderNodeList();
+  renderChoices();
 }
 
 function saveNode(){
@@ -130,6 +131,107 @@ function renderNodeList(){
     li.textContent = n.title || `노드 ${String(n.id).padStart(4,"0")}`;
     li.onclick = ()=>{ selectNode(n.id); switchTab("editor"); };
     ul.appendChild(li);
+  });
+}
+
+
+
+// ===============================
+// CHOICES (MINIMAL v3)
+// ===============================
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+function addChoice(){
+  const n = state.nodes.find(n=>n.id===state.selectedNodeId);
+  if(!n) return;
+
+  n.choices = n.choices || [];
+  n.choices.push({
+    text: "",
+    toNodeId: "",
+    confusionDelta: 0
+  });
+
+  n.updatedAt = now();
+  saveAll();
+  renderChoices();
+}
+
+function renderChoices(){
+  const wrap = $("#choiceList");
+  if(!wrap) return;
+
+  const n = state.nodes.find(n=>n.id===state.selectedNodeId);
+  wrap.innerHTML = "";
+  if(!n) return;
+
+  const choices = n.choices || [];
+  choices.forEach((c, idx)=>{
+    const row = document.createElement("div");
+    row.className = "choice-row";
+
+    row.innerHTML = `
+      <label class="field">
+        <span class="label">선택지 텍스트</span>
+        <input data-k="text" data-i="${idx}" type="text" placeholder="예: 칼을 뽑는다" value="${escapeHtml(c.text || "")}">
+      </label>
+
+      <div class="grid2">
+        <label class="field">
+          <span class="label">다음 노드 ID</span>
+          <input data-k="toNodeId" data-i="${idx}" type="text" placeholder="예: 7 또는 0007" value="${escapeHtml(c.toNodeId || "")}">
+        </label>
+        <label class="field">
+          <span class="label">혼란 변화</span>
+          <input data-k="confusionDelta" data-i="${idx}" type="number" step="1" value="${Number(c.confusionDelta||0)}">
+        </label>
+      </div>
+
+      <div class="row">
+        <button class="btn danger" type="button" data-del="${idx}">선택지 삭제</button>
+      </div>
+    `;
+
+    wrap.appendChild(row);
+  });
+
+  // input → state 반영
+  wrap.querySelectorAll("input[data-k]").forEach(inp=>{
+    inp.addEventListener("input", (e)=>{
+      const i = parseInt(e.target.dataset.i, 10);
+      const k = e.target.dataset.k;
+
+      const n2 = state.nodes.find(n=>n.id===state.selectedNodeId);
+      if(!n2) return;
+      const ch = (n2.choices || [])[i];
+      if(!ch) return;
+
+      if(k==="confusionDelta") ch[k] = parseInt(e.target.value || "0", 10) || 0;
+      else ch[k] = e.target.value;
+
+      n2.updatedAt = now();
+      saveAll();
+    });
+  });
+
+  // delete
+  wrap.querySelectorAll("button[data-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = parseInt(btn.dataset.del, 10);
+      const n2 = state.nodes.find(n=>n.id===state.selectedNodeId);
+      if(!n2) return;
+      n2.choices.splice(i, 1);
+      n2.updatedAt = now();
+      saveAll();
+      renderChoices();
+    });
   });
 }
 
@@ -324,6 +426,7 @@ function init(){
 
   $("#btnAddNode")?.addEventListener("click", addNode);
   $("#btnSaveNode")?.addEventListener("click", saveNode);
+  $("#btnAddChoice")?.addEventListener("click", addChoice);
 
   $("#btnAddItem")?.addEventListener("click", addItem);
   $("#btnSaveItem")?.addEventListener("click", saveItem);
