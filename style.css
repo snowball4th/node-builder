@@ -526,43 +526,27 @@ textarea{ resize:none; }
 
 /* choices */
 .choice-row{ margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+
 /* =========================
-   PATCH: Nodes panel header (title left, add button right, hint on next line)
-   - Works WITHOUT changing HTML structure
+   HOTFIX: Nodes panel header alignment
+   (keep sticky header styles, but force row layout)
    ========================= */
-
 .panel-header{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap; /* allow hint to wrap to next line */
-  gap: 10px;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  flex-wrap:wrap !important;
 }
-
-/* Title takes remaining space on the first row */
 .panel-header > h2.section-title{
-  flex: 1 1 auto;
-  margin: 0; /* override .panel-header h2 margin */
+  margin:0 !important;
+  flex:1 1 auto !important;
 }
-
-/* Add button sticks to the right on the first row */
 #btnAddNode{
-  margin-left: auto;
-  white-space: nowrap;
+  margin-left:auto !important;
+  width:auto !important;
+  white-space:nowrap !important;
 }
-
-/* Hint always starts on a new line */
 .panel-header > .hint{
-  flex: 0 0 100%;
-  margin-top: 0; /* keep compact; adjust if you want more spacing */
+  flex:0 0 100% !important;
+  margin-top:6px !important;
 }
-
-/* If you use .panel-head-row in HTML, it still works fine */
-.panel-head-row{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.panel-head-row .section-title{ margin: 0; line-height: 1.1; }
-.panel-head-row .btn{ white-space: nowrap; }
