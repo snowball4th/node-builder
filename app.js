@@ -70,6 +70,23 @@ function loadAll(){
   }catch(e){}
 }
 
+
+// ---------- autosave (debounced) ----------
+const SAVE_DEBOUNCE_MS = 350;
+function saveAllDebounced(){
+  clearTimeout(saveAllDebounced.t);
+  saveAllDebounced.t = setTimeout(()=>{ 
+    try{ saveAll(); }catch(e){}
+  }, SAVE_DEBOUNCE_MS);
+
+function renderNodeListDebounced(){
+  clearTimeout(renderNodeListDebounced.t);
+  renderNodeListDebounced.t = setTimeout(()=>{
+    try{ renderNodeList(); }catch(e){}
+  }, 150);
+}
+}
+
 // ===============================
 // NODES
 // ===============================
@@ -379,23 +396,253 @@ function deleteItem(){
 // ===============================
 // RUN (PREVIEW)
 // ===============================
+
 function ensureRun(){
   if(state.run.currentNodeId==null){
-    state.run.currentNodeId = state.nodes[0]?.id ?? null;
+    // 선택된 노드가 있으면 그걸 우선 시작점으로 사용
+    state.run.currentNodeId = state.selectedNodeId ?? state.nodes[0]?.id ?? null;
     state.run.inventory = [];
     state.run.confusion = 0;
   }
 }
 
+function confusionLabel(v){
+  if(v <= 2) return "calm";
+  if(v <= 5) return "subtle";
+  if(v <= 8) return "uneasy";
+  return "danger";
+}
+
+function parseNodeId(raw){
+  const s = String(raw ?? "").trim();
+  if(!s) return null;
+  const n = parseInt(s, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function renderInventory(){
+  const list = $("#invList");
+  if(!list) return;
+  list.innerHTML = "";
+
+  const inv = state.run.inventory || [];
+  if(!inv.length){
+    list.innerHTML = `<div class="hint tiny">비어 있음</div>`;
+    return;
+  }
+
+  inv.forEach((it)=>{
+    const row = document.createElement("div");
+    row.className = "inv-row";
+    row.textContent = it.name || it.id || "아이템";
+    list.appendChild(row);
+  });
+}
+
 function renderRun(){
   ensureRun();
-  const n = state.nodes.find(n=>n.id===state.run.currentNodeId);
-  if(!n) return;
 
   const t = $("#previewTitle");
   const b = $("#previewBody");
-  if(t) t.textContent = n.title || "제목 없음";
+  const cWrap = $("#previewChoices");
+  const area = $("#previewArea");
+
+  // 혼란 분위기 반영 (수치는 UI에 노출하지 않음)
+  if(area) area.dataset.confusion = confusionLabel(state.run.confusion);
+
+  const n = state.nodes.find(n=>n.id===state.run.currentNodeId);
+  if(!n){
+    if(t) t.textContent = "시작";
+    if(b) b.textContent = state.nodes.length
+      ? "현재 노드를 찾지 못했어. 선택지의 다음 노드 ID(toNodeId)를 확인해줘."
+      : "노드가 없어. 먼저 노드를 추가해줘.";
+    if(cWrap) cWrap.innerHTML = "";
+    renderInventory();
+    return;
+  }
+
+  if(t) t.textContent = n.title || `노드 ${String(n.id).padStart(4,"0")}`;
   if(b) b.textContent = n.body || "";
+
+  // 선택지 렌더
+  if(cWrap){
+    cWrap.innerHTML = "";
+
+    (n.choices || []).forEach((ch)=>{
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn choice";
+      btn.textContent = ch.text || "(빈 선택지)";
+
+      const toId = parseNodeId(ch.toNodeId);
+      const exists = toId != null && state.nodes.some(x=>x.id===toId);
+      btn.disabled = !exists;
+
+      btn.addEventListener("click", ()=>{
+        // 혼란 누적 (0~10)
+        const delta = parseInt(ch.confusionDelta || 0, 10) || 0;
+        state.run.confusion = clamp(state.run.confusion + delta, 0, 10);
+
+        if(toId != null) state.run.currentNodeId = toId;
+        renderRun();
+      });
+
+      cWrap.appendChild(btn);
+    });
+
+    if(!(n.choices||[]).length){
+      const empty = document.createElement("div");
+      empty.className = "hint tiny";
+      empty.textContent = "선택지가 없어. 편집 탭에서 선택지를 추가해줘.";
+      cWrap.appendChild(empty);
+    }
+  }
+
+  renderInventory();
+}
+
+
+// ---------- Export / Import / Play ----------
+function buildExportPayload(){
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    nodes: state.nodes,
+    items: state.items,
+    nextNodeId: state.nextNodeId
+  };
+}
+
+function downloadJson(filename, obj){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function handleImportText(text){
+  let data;
+  try{ data = JSON.parse(text); }
+  catch(e){ toast("불러오기 실패: JSON 형식이 아니야"); return; }
+
+  if(!data || typeof data !== "object"){
+    toast("불러오기 실패: 데이터가 올바르지 않아");
+    return;
+  }
+
+  // 최소 검증
+  if(!Array.isArray(data.nodes) || !Array.isArray(data.items)){
+    toast("불러오기 실패: nodes/items 구조가 없어");
+    return;
+  }
+
+  state.nodes = data.nodes;
+  state.items = data.items;
+  state.nextNodeId = data.nextNodeId || (Math.max(0, ...state.nodes.map(n=>n.id||0)) + 1);
+  state.selectedNodeId = state.nodes[0]?.id ?? null;
+
+  saveAll();
+  renderNodeList();
+  if(state.selectedNodeId) selectNode(state.selectedNodeId);
+  toast("불러오기 완료");
+}
+
+function openPlayTab(){
+  // 현재 상태를 스냅샷으로 고정해서 새 탭에서 실행
+  const snapshot = JSON.stringify({ nodes: state.nodes, items: state.items });
+
+  const w = window.open("", "_blank");
+  if(!w){ alert("팝업이 차단됐어. 브라우저에서 팝업 허용 후 다시 눌러줘."); return; }
+
+  w.document.open();
+  w.document.write(`<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SG Play</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,sans-serif;margin:0;padding:20px;background:#0b0d12;color:#e9eefc;}
+  .card{max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;}
+  h1{font-size:18px;margin:0 0 8px}
+  pre{white-space:pre-wrap;line-height:1.55;margin:0 0 14px;opacity:.95}
+  .choices{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+  button{padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:#e9eefc;font-size:15px;text-align:left}
+  button:disabled{opacity:.35}
+  .top{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .small{opacity:.6;font-size:12px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div>
+        <div class="small">SG Play</div>
+        <h1 id="t"></h1>
+      </div>
+      <button id="reset">처음으로</button>
+    </div>
+    <pre id="b"></pre>
+    <div class="choices" id="c"></div>
+  </div>
+
+<script>
+  const DATA = ${snapshot};
+
+  function parseId(raw){
+    const s = String(raw ?? "").trim();
+    if(!s) return null;
+    const n = parseInt(s, 10);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  const nodes = DATA.nodes || [];
+  let current = nodes[0]?.id ?? null;
+
+  function getNode(id){ return nodes.find(n=>n.id===id) || null; }
+
+  function render(){
+    const n = getNode(current);
+    const t = document.querySelector("#t");
+    const b = document.querySelector("#b");
+    const c = document.querySelector("#c");
+
+    if(!n){
+      t.textContent = nodes.length ? "노드 없음/연결 오류" : "노드가 없어";
+      b.textContent = nodes.length ? "현재 노드를 찾지 못했어. 연결(toNodeId)을 확인해줘." : "먼저 노드를 추가해줘.";
+      c.innerHTML = "";
+      return;
+    }
+
+    t.textContent = n.title || ("노드 " + String(n.id).padStart(4,"0"));
+    b.textContent = n.body || "";
+
+    c.innerHTML = "";
+    (n.choices || []).forEach(ch=>{
+      const btn = document.createElement("button");
+      btn.textContent = ch.text || "(빈 선택지)";
+      const to = parseId(ch.toNodeId);
+      const ok = to != null && !!getNode(to);
+      btn.disabled = !ok;
+      btn.onclick = ()=>{ if(ok){ current = to; render(); } };
+      c.appendChild(btn);
+    });
+  }
+
+  document.querySelector("#reset").onclick = ()=>{
+    current = nodes[0]?.id ?? null;
+    render();
+  };
+  render();
+<\/script>
+</body>
+</html>`);
+  w.document.close();
 }
 
 // ===============================
@@ -423,6 +670,49 @@ function init(){
 
   // items: 기본은 목록만
   closeItemEditor();
+
+  // RUN controls
+  $("#btnResetRun")?.addEventListener("click", ()=>{
+    state.run.currentNodeId = null;
+    state.run.inventory = [];
+    state.run.confusion = 0;
+    renderRun();
+  });
+
+  // Play (new tab)
+  $("#btnPlay")?.addEventListener("click", openPlayTab);
+
+  // Save/Share (download)
+  $("#btnShare")?.addEventListener("click", ()=>{
+    downloadJson(`SG_backup_${Date.now()}.json`, buildExportPayload());
+  });
+
+  // Import (upload json)
+  $("#btnImport")?.addEventListener("click", ()=> $("#fileImport")?.click());
+  $("#fileImport")?.addEventListener("change", async (e)=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    const text = await f.text();
+    handleImportText(text);
+    e.target.value = "";
+  });
+
+  // Node editor live autosave
+  $("#selectedNodeTitle")?.addEventListener("input", (e)=>{
+    const n = state.nodes.find(n=>n.id===state.selectedNodeId);
+    if(!n) return;
+    n.title = e.target.value;
+    n.updatedAt = now();
+    saveAllDebounced();
+    renderNodeListDebounced();
+  });
+  $("#selectedNodeBody")?.addEventListener("input", (e)=>{
+    const n = state.nodes.find(n=>n.id===state.selectedNodeId);
+    if(!n) return;
+    n.body = e.target.value;
+    n.updatedAt = now();
+    saveAllDebounced();
+  });
 
   $("#btnAddNode")?.addEventListener("click", addNode);
   $("#btnSaveNode")?.addEventListener("click", saveNode);
