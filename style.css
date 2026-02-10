@@ -526,58 +526,43 @@ textarea{ resize:none; }
 
 /* choices */
 .choice-row{ margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+/* =========================
+   PATCH: Nodes panel header (title left, add button right, hint on next line)
+   - Works WITHOUT changing HTML structure
+   ========================= */
 
-/* play preview */
-.play-only .play-shell{
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  padding: 16px;
-}
-
-.play-only .preview{
-  width: min(760px, 100%);
-}
-
-.preview-actions{
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.section-head{
+.panel-header{
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 오른쪽 끝으로 */
-  gap: 12px;
-  margin-bottom: 10px; /* 제목 아래 여백(필요시 조절) */
-  flex-wrap: nowrap;
+  justify-content: space-between;
+  flex-wrap: wrap; /* allow hint to wrap to next line */
+  gap: 10px;
 }
 
-.section-title{
-  margin: 0;           /* 제목 기본 여백 제거 */
-  line-height: 1.1;
+/* Title takes remaining space on the first row */
+.panel-header > h2.section-title{
+  flex: 1 1 auto;
+  margin: 0; /* override .panel-header h2 margin */
 }
 
-/* 버튼이 너무 커 보이면(선택) */
-.section-head .btn{
+/* Add button sticks to the right on the first row */
+#btnAddNode{
+  margin-left: auto;
   white-space: nowrap;
-  padding: 10px 12px;
-  border-radius: 12px;
 }
-/* 노드 탭 헤더: 제목 왼쪽 / 버튼 오른쪽 */
+
+/* Hint always starts on a new line */
+.panel-header > .hint{
+  flex: 0 0 100%;
+  margin-top: 0; /* keep compact; adjust if you want more spacing */
+}
+
+/* If you use .panel-head-row in HTML, it still works fine */
 .panel-head-row{
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
-
-.panel-head-row .section-title{
-  margin: 0;
-  line-height: 1.1;
-}
-
-.panel-head-row .btn{
-  white-space: nowrap;
-}
+.panel-head-row .section-title{ margin: 0; line-height: 1.1; }
+.panel-head-row .btn{ white-space: nowrap; }
