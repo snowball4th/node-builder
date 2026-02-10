@@ -4,8 +4,19 @@
 // - no uses, no infinite
 // ===============================
 
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => [...document.querySelectorAll(s)];
+// ---------- selector helpers ----------
+// id만 넘겨도 되고, ".class" / "[data-...]" 도 그대로 지원
+const $ = (s) => {
+  if (!s) return null;
+  const sel = (typeof s === "string" && /^[#.[]/.test(s)) ? s : ("#" + s);
+  return document.querySelector(sel);
+};
+const $$ = (s) => {
+  if (!s) return [];
+  const sel = (typeof s === "string" && /^[#.[]/.test(s)) ? s : ("#" + s);
+  return [...document.querySelectorAll(sel)];
+};
+
 const STORAGE_KEY = "node_builder_v3";
 
 // ---------- utils ----------
@@ -15,14 +26,14 @@ const now = () => new Date().toLocaleString("ko-KR", { hour12:false });
 // ---------- state ----------
 const state = {
   nodes: [],
-  items: [],          // item master
+  items: [],
   selectedNodeId: null,
   selectedItemIndex: -1,
   nextNodeId: 1,
 
   run: {
     currentNodeId: null,
-    inventory: [],    // { itemId, qty, dur }
+    inventory: [],
     confusion: 0
   }
 };
@@ -83,17 +94,27 @@ function selectNode(id){
   const n = state.nodes.find(n=>n.id===id);
   if(!n) return;
 
-  $("#selectedNodeId").value = String(id).padStart(4,"0");
-  $("#selectedNodeTitle").value = n.title;
-  $("#selectedNodeBody").value = n.body;
+  const idEl = $("#selectedNodeId");
+  const titleEl = $("#selectedNodeTitle");
+  const bodyEl = $("#selectedNodeBody");
+  if(!idEl || !titleEl || !bodyEl) return;
+
+  idEl.value = String(id).padStart(4,"0");
+  titleEl.value = n.title;
+  bodyEl.value = n.body;
   renderNodeList();
 }
 
 function saveNode(){
   const n = state.nodes.find(n=>n.id===state.selectedNodeId);
   if(!n) return;
-  n.title = $("#selectedNodeTitle").value;
-  n.body = $("#selectedNodeBody").value;
+
+  const titleEl = $("#selectedNodeTitle");
+  const bodyEl = $("#selectedNodeBody");
+  if(!titleEl || !bodyEl) return;
+
+  n.title = titleEl.value;
+  n.body = bodyEl.value;
   n.updatedAt = now();
   saveAll();
   renderNodeList();
@@ -101,6 +122,7 @@ function saveNode(){
 
 function renderNodeList(){
   const ul = $("#nodeList");
+  if(!ul) return;
   ul.innerHTML = "";
   state.nodes.forEach(n=>{
     const li = document.createElement("li");
@@ -135,6 +157,7 @@ function addItem(){
 
 function renderItems(){
   const wrap = $("#itemList");
+  if(!wrap) return;
   wrap.innerHTML = "";
   state.items.forEach((it,i)=>{
     const d = document.createElement("div");
@@ -149,34 +172,55 @@ function renderItems(){
 }
 
 function loadItemToForm(item){
-  $("#selectedItemId").value = item.id;
-  $("#selectedItemName").value = item.displayName;
-  $("#selectedItemQty").value = item.qty;
-  $("#selectedItemDur").value = item.dur;
+  const map = [
+    ["selectedItemId", item.id],
+    ["selectedItemName", item.displayName],
+    ["selectedItemQty", item.qty],
+    ["selectedItemDur", item.dur],
+    ["itemBaseName", item.variants.base.name],
+    ["itemBrokenName", item.variants.dur0.name],
+    ["itemSpecialName", item.variants.special.name],
+    ["itemSpecialNode", item.variants.special.nodeId || ""]
+  ];
 
-  $("#itemBaseName").value = item.variants.base.name;
-  $("#itemBrokenName").value = item.variants.dur0.name;
-  $("#itemSpecialName").value = item.variants.special.name;
-  $("#itemSpecialNode").value = item.variants.special.nodeId || "";
+  map.forEach(([id,val])=>{
+    const el = $(id);
+    if(el) el.value = val ?? "";
+  });
 }
 
 function saveItem(){
   if(state.selectedItemIndex<0) return;
   const it = state.items[state.selectedItemIndex];
 
-  it.id = $("#selectedItemId").value.trim();
-  it.displayName = $("#selectedItemName").value.trim();
-  it.qty = clamp($("#selectedItemQty").value,0,10);
-  it.dur = clamp($("#selectedItemDur").value,0,10);
+  const idEl = $("#selectedItemId");
+  const nameEl = $("#selectedItemName");
+  const qtyEl = $("#selectedItemQty");
+  const durEl = $("#selectedItemDur");
+  if(!idEl || !nameEl || !qtyEl || !durEl) return;
 
-  it.variants.base.name = $("#itemBaseName").value.trim();
-  it.variants.dur0.name = $("#itemBrokenName").value.trim();
-  it.variants.special.name = $("#itemSpecialName").value.trim();
-  it.variants.special.nodeId = $("#itemSpecialNode").value.trim();
+  it.id = idEl.value.trim();
+  it.displayName = nameEl.value.trim();
+  it.qty = clamp(qtyEl.value,0,10);
+  it.dur = clamp(durEl.value,0,10);
 
-  if($("#itemBaseImg").files[0]) it.variants.base.img = $("#itemBaseImg").files[0];
-  if($("#itemBrokenImg").files[0]) it.variants.dur0.img = $("#itemBrokenImg").files[0];
-  if($("#itemSpecialImg").files[0]) it.variants.special.img = $("#itemSpecialImg").files[0];
+  const baseName = $("#itemBaseName");
+  const brokenName = $("#itemBrokenName");
+  const specialName = $("#itemSpecialName");
+  const specialNode = $("#itemSpecialNode");
+
+  if(baseName) it.variants.base.name = baseName.value.trim();
+  if(brokenName) it.variants.dur0.name = brokenName.value.trim();
+  if(specialName) it.variants.special.name = specialName.value.trim();
+  if(specialNode) it.variants.special.nodeId = specialNode.value.trim();
+
+  const baseImg = $("#itemBaseImg");
+  const brokenImg = $("#itemBrokenImg");
+  const specialImg = $("#itemSpecialImg");
+
+  if(baseImg?.files?.[0]) it.variants.base.img = baseImg.files[0];
+  if(brokenImg?.files?.[0]) it.variants.dur0.img = brokenImg.files[0];
+  if(specialImg?.files?.[0]) it.variants.special.img = specialImg.files[0];
 
   saveAll();
   renderItems();
@@ -207,8 +251,10 @@ function renderRun(){
   const n = state.nodes.find(n=>n.id===state.run.currentNodeId);
   if(!n) return;
 
-  $("#previewTitle").textContent = n.title || "제목 없음";
-  $("#previewBody").textContent = n.body || "";
+  const t = $("#previewTitle");
+  const b = $("#previewBody");
+  if(t) t.textContent = n.title || "제목 없음";
+  if(b) b.textContent = n.body || "";
 }
 
 // ===============================
@@ -216,10 +262,12 @@ function renderRun(){
 // ===============================
 function switchTab(name){
   $$(".tab").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
+
   ["nodes","editor","preview","items"].forEach(p=>{
-    document.querySelector(`[data-panel="${p}"]`)
-      .classList.toggle("hidden", p!==name);
+    const panel = document.querySelector(`[data-panel="${p}"]`);
+    if(panel) panel.classList.toggle("hidden", p!==name);
   });
+
   if(name==="preview") renderRun();
   if(name==="items") renderItems();
 }
@@ -229,12 +277,12 @@ function init(){
   renderNodeList();
   if(state.selectedNodeId) selectNode(state.selectedNodeId);
 
-  $("#btnAddNode").onclick = addNode;
-  $("#btnSaveNode").onclick = saveNode;
+  $("#btnAddNode")?.addEventListener("click", addNode);
+  $("#btnSaveNode")?.addEventListener("click", saveNode);
 
-  $("#btnAddItem").onclick = addItem;
-  $("#btnSaveItem").onclick = saveItem;
-  $("#btnDeleteItem").onclick = deleteItem;
+  $("#btnAddItem")?.addEventListener("click", addItem);
+  $("#btnSaveItem")?.addEventListener("click", saveItem);
+  $("#btnDeleteItem")?.addEventListener("click", deleteItem);
 
   $$(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 }
