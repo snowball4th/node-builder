@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SG — Play</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body class="play-only">
+  <main class="play-shell">
+    <section id="previewArea" class="preview">
+      <div class="preview-head">
+        <div class="preview-title" id="previewTitle">—</div>
+        <div class="preview-actions">
+          <button id="btnResetRun" class="btn" type="button">처음으로</button>
+          <button id="btnExitPlay" class="btn" type="button">빌더로</button>
+        </div>
+      </div>
+
+      <div class="preview-body" id="previewBody">—</div>
+      <div class="preview-choices" id="previewChoices"></div>
+
+      <div class="preview-foot">
+        <span class="muted" id="playMeta"></span>
+      </div>
+    </section>
+  </main>
+
+  <script src="./play.js"></script>
+</body>
+</html>
