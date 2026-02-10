@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>게임만들기 - 노드 빌더</title>
+  <title>SG - 노드 빌더</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">게임만들기</div>
+    <div class="brand">SG</div>
     <div class="topbar-actions">
       <button id="btnAddNode" class="btn primary" type="button">+ 노드 추가</button>
     </div>
@@ -111,118 +111,128 @@
           <div class="section-head">
             <div class="section-title">선택 아이템 편집</div>
           </div>
-           <!-- ✅ 여기부터 실제 내용 -->
 
-  <!-- 정체성 -->
-  <div class="grid2">
-    <label class="field">
-      <span class="label">itemId(내부 키)</span>
-      <input id="selectedItemId" type="text" />
-    </label>
+          <!-- 기본은 목록만, 편집은 필요할 때 펼침 -->
+          <div id="itemEditor" class="hidden">
 
-    <label class="field">
-      <span class="label">표시 이름</span>
-      <input id="selectedItemName" type="text" />
-    </label>
-  </div>
+            <!-- 정체성 -->
+            <div class="grid2">
+              <label class="field">
+                <span class="label">itemId(내부 키)</span>
+                <input id="selectedItemId"
+                       type="text"
+                       inputmode="latin"
+                       autocomplete="off"
+                       autocapitalize="none"
+                       spellcheck="false"
+                       placeholder="예: brokenknife"
+                       pattern="[a-z0-9_-]+"/>
+              </label>
 
-  <!-- 기본 속성 -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">기본 속성</div>
-  </div>
+              <label class="field">
+                <span class="label">표시 이름</span>
+                <input id="selectedItemName" type="text" />
+              </label>
+            </div>
 
-  <div class="grid2">
-    <label class="field">
-      <span class="label">수량(qty)</span>
-      <input id="selectedItemQty" type="number" min="0" max="10" step="1" />
-    </label>
+            <!-- 기본 속성 -->
+            <div class="section">
+              <div class="section-head">
+                <div class="section-title">기본 속성</div>
+              </div>
 
-    <label class="field">
-      <span class="label">내구(dur)</span>
-      <input id="selectedItemDur" type="number" min="0" max="10" step="1" />
-    </label>
-  </div>
+              <div class="grid2">
+                <label class="field">
+                  <span class="label">수량(qty)</span>
+                  <input id="selectedItemQty" type="number" min="0" max="10" step="1" />
+                </label>
 
-  <div class="hint tiny">qty/dur 범위는 현재 0~10으로 클램프돼.</div>
-</div>
+                <label class="field">
+                  <span class="label">내구(dur)</span>
+                  <input id="selectedItemDur" type="number" min="0" max="10" step="1" />
+                </label>
+              </div>
 
-<!-- 아이템 상태 -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">아이템 상태 (최대 3)</div>
-  </div>
+              <div class="hint tiny">qty/dur 범위는 현재 0~10으로 클램프돼.</div>
+            </div>
 
-  <!-- base -->
-  <div class="section">
-    <div class="section-head">
-      <div class="section-title">base (기본)</div>
-    </div>
-    <div class="grid2">
-      <label class="field">
-        <span class="label">표시명</span>
-        <input id="itemBaseName" type="text" placeholder="예: 낚싯대" />
-      </label>
-      <label class="field">
-        <span class="label">이미지</span>
-        <input id="itemBaseImg" type="file" accept="image/*" />
-      </label>
-    </div>
-  </div>
+            <!-- 아이템 상태 -->
+            <div class="section">
+              <div class="section-head">
+                <div class="section-title">아이템 상태 (최대 3)</div>
+              </div>
 
-  <!-- dur0 -->
-  <div class="section">
-    <div class="section-head">
-      <div class="section-title">dur0 (파손/0)</div>
-    </div>
-    <div class="grid2">
-      <label class="field">
-        <span class="label">표시명</span>
-        <input id="itemBrokenName" type="text" placeholder="예: 부러진 낚싯대" />
-      </label>
-      <label class="field">
-        <span class="label">이미지</span>
-        <input id="itemBrokenImg" type="file" accept="image/*" />
-      </label>
-    </div>
-  </div>
+              <!-- base -->
+              <div class="section">
+                <div class="section-head">
+                  <div class="section-title">base (기본)</div>
+                </div>
+                <div class="grid2">
+                  <label class="field">
+                    <span class="label">표시명</span>
+                    <input id="itemBaseName" type="text" placeholder="예: 낚싯대" />
+                  </label>
+                  <label class="field">
+                    <span class="label">이미지</span>
+                    <input id="itemBaseImg" type="file" accept="image/*" />
+                  </label>
+                </div>
+              </div>
 
-  <!-- special -->
-  <div class="section">
-    <div class="section-head">
-      <div class="section-title">special (특수)</div>
-    </div>
-    <div class="grid2">
-      <label class="field">
-        <span class="label">표시명</span>
-        <input id="itemSpecialName" type="text" placeholder="예: 기묘한 낚싯대" />
-      </label>
-      <label class="field">
-        <span class="label">이미지</span>
-        <input id="itemSpecialImg" type="file" accept="image/*" />
-      </label>
-    </div>
+              <!-- dur0 -->
+              <div class="section">
+                <div class="section-head">
+                  <div class="section-title">dur0 (파손/0)</div>
+                </div>
+                <div class="grid2">
+                  <label class="field">
+                    <span class="label">표시명</span>
+                    <input id="itemBrokenName" type="text" placeholder="예: 부러진 낚싯대" />
+                  </label>
+                  <label class="field">
+                    <span class="label">이미지</span>
+                    <input id="itemBrokenImg" type="file" accept="image/*" />
+                  </label>
+                </div>
+              </div>
 
-    <label class="field">
-      <span class="label">연결 노드(nodeId)</span>
-      <input id="itemSpecialNode" type="text" placeholder="예: 0007 또는 7" />
-    </label>
+              <!-- special -->
+              <div class="section">
+                <div class="section-head">
+                  <div class="section-title">special (특수)</div>
+                </div>
+                <div class="grid2">
+                  <label class="field">
+                    <span class="label">표시명</span>
+                    <input id="itemSpecialName" type="text" placeholder="예: 기묘한 낚싯대" />
+                  </label>
+                  <label class="field">
+                    <span class="label">이미지</span>
+                    <input id="itemSpecialImg" type="file" accept="image/*" />
+                  </label>
+                </div>
 
-    <div class="hint tiny">special.nodeId는 문자열로 저장돼. 필요하면 JS에서 숫자 패딩 처리 가능.</div>
-  </div>
-</div>
+                <label class="field">
+                  <span class="label">연결 노드(nodeId)</span>
+                  <input id="itemSpecialNode" type="text" placeholder="예: 0007 또는 7" />
+                </label>
 
+                <div class="hint tiny">special.nodeId는 문자열로 저장돼. 필요하면 JS에서 숫자 패딩 처리 가능.</div>
+              </div>
+            </div>
 
-  <!-- 액션 -->
-<div class="row">
-  <button id="btnSaveItem" class="btn">아이템 저장</button>
-  <button id="btnDeleteItem" class="btn danger">아이템 삭제</button>
-</div>
+            <!-- 액션 -->
+            <div class="row">
+              <button id="btnSaveItem" class="btn" type="button">아이템 저장</button>
+              <button id="btnDeleteItem" class="btn danger" type="button">아이템 삭제</button>
+            </div>
 
-  <div class="hint tiny">
-    itemId는 중복되면 안 돼.
-  </div>
-</div>
+            <div class="hint tiny">
+              itemId는 중복되면 안 돼.
+            </div>
+
+          </div>
+        </div>
 
       </div>
     </section>
