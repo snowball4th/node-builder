@@ -10,7 +10,10 @@
   <header class="topbar">
     <div class="brand">SG</div>
     <div class="topbar-actions">
-      <button id="btnAddNode" class="btn primary" type="button">+ 노드 추가</button>
+      <button id="btnPlay" class="btn" type="button">플레이</button>
+      <button id="btnShare" class="btn" type="button">저장/공유</button>
+      <button id="btnImport" class="btn" type="button">불러오기</button>
+      <input id="fileImport" type="file" accept="application/json" style="display:none" />
     </div>
   </header>
 
@@ -19,6 +22,7 @@
     <section class="panel" id="panel-nodes" data-panel="nodes" aria-label="노드 목록">
       <div class="panel-header">
         <h2>노드</h2>
+        <button id="btnAddNode" class="btn primary" type="button">+ 노드 추가</button>
         <div class="hint">탭: 노드 / 편집 / 미리보기 / 아이템</div>
       </div>
       <ul id="nodeList" class="node-list" aria-label="노드 리스트"></ul>
